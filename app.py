@@ -1,11 +1,32 @@
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, request, redirect
 import json
 from flask_cors import CORS
-
+from flask_sqlalchemy import SQLAlchemy
+import os
+from os.path import join, dirname, realpath
 
 app = Flask(__name__)
-
 cors = CORS(app, resources={r"/": {"origins": "*"}})
+app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
+db = SQLAlchemy(app)
+
+# images folder
+IMAGES_FOLDER = 'static/images'
+app.config['IMAGES_FOLDER'] = IMAGES_FOLDER
+# icons folder
+ICONS_FOLDER = 'static/icons'
+app.config['ICONS_FOLDER'] = ICONS_FOLDER
+
+
+class Categories(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    img_url = db.Column(db.String(200), nullable=False)
+    icon_url = db.Column(db.String(200), nullable=False)
+
+    def __repr__(self) -> str:
+        return '<Task %r>' % self.id
+
 
 # a Python object (dict):
 x = [
@@ -254,14 +275,54 @@ x = [
 y = json.dumps(x)
 
 
-@app.route('/')
+@app.route('/add_category', methods=['POST', 'GET'])
 def index():
+    if request.method == 'POST':
+
+        uploaded_image = request.files['image']
+        uploaded_icon = request.files['icon']
+
+        if uploaded_image.filename != '':
+            img_file_path = os.path.join(
+                app.config['IMAGES_FOLDER'], uploaded_image.filename)
+            # set the file path
+            print('image', img_file_path)
+
+            uploaded_image.save(img_file_path)
+            # save the file
+        if uploaded_icon.filename != '':
+            icon_file_path = os.path.join(
+                app.config['ICONS_FOLDER'], uploaded_icon.filename)
+            # set the file path
+
+            print('image', icon_file_path)
+
+            uploaded_icon.save(icon_file_path)
+            
+        # try:
+           
+            db.session.add(Categories(
+                name=request.form['name'],
+                img_url=img_file_path,
+                icon_url=icon_file_path
+            ))
+            db.session.commit()
+            return redirect('/categories')
+        # except:
+            # print('some error')
     return render_template('index.html')
 
 
 @app.route('/api')
 def api():
     return y
+
+
+
+@app.route('/categories')
+def Test():
+    dd = Categories.query.order_by(Categories.id).all()
+    return render_template('categories.html', data=dd)
 
 
 if __name__ == '__main__':
