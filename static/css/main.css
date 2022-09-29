@@ -1,0 +1,10 @@
+html {
+  width: 100vw;
+  padding: 1rem;
+  overflow-x: hidden;
+  /* height: 100vh; */
+}
+
+body {
+  width: 100%;
+}

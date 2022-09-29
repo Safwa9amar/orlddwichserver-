@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template, url_for
 import json
 from flask_cors import CORS
 
@@ -253,10 +253,16 @@ x = [
 # convert into JSON:
 y = json.dumps(x)
 
-# the result is a JSON string:
-print(y)
-
 
 @app.route('/')
 def index():
+    return render_template('index.html')
+
+
+@app.route('/api')
+def api():
     return y
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
