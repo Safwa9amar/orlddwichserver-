@@ -1,8 +1,11 @@
 from flask import Flask
 import json
+from flask_cors import CORS
+
 
 app = Flask(__name__)
 
+cors = CORS(app, resources={r"/": {"origins": "http://localhost:3000"}})
 
 # a Python object (dict):
 x = [
