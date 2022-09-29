@@ -318,6 +318,11 @@ def api():
     return y
 
 
+@app.route('/')
+def login():
+    return render_template('login.html')
+
+
 
 @app.route('/categories')
 def Test():
