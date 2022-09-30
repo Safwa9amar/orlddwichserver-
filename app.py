@@ -1,14 +1,16 @@
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request, redirect, jsonify
 import json
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import os
 from os.path import join, dirname, realpath
+from flask_marshmallow import Marshmallow
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/": {"origins": "*"}})
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
+ma = Marshmallow(app)
 
 # images folder
 IMAGES_FOLDER = 'static/images'
@@ -28,6 +30,9 @@ class Categories(db.Model):
         return '<Task %r>' % self.id
 
 
+class CategoriesSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Categories
 # a Python object (dict):
 x = [
     {
@@ -299,7 +304,7 @@ def index():
 
             uploaded_icon.save(icon_file_path)
             
-        # try:
+        try:
            
             db.session.add(Categories(
                 name=request.form['name'],
@@ -308,14 +313,17 @@ def index():
             ))
             db.session.commit()
             return redirect('/categories')
-        # except:
-            # print('some error')
+        except:
+            print('some error')
     return render_template('index.html')
 
 
 @app.route('/api')
 def api():
-    return y
+    categor = Categories.query.all()
+    cat_schema = CategoriesSchema(many=True)
+    output = cat_schema.dump(categor)
+    return jsonify({"post":output})
 
 
 @app.route('/')
