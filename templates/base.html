@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="winter">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -79,7 +79,7 @@
     <div class="drawer">
       <input id="my-drawer" type="checkbox" class="drawer-toggle" />
 
-      <div class="drawer-content flex items-center justify-center">
+      <div class="drawer-content flex  justify-center">
         {%block body%} {%endblock%}
       </div>
       <div class="drawer-side">
@@ -87,7 +87,10 @@
         <ul class="menu p-4 overflow-y-auto w-80 bg-base-100 text-base-content">
           <!-- Sidebar content here -->
           <li><a href="/categories">Catégories</a></li>
-          <li><a href="/add_category"> Ajouter une catégorie</a></li>
+          {%for el in data%}
+            <li ><a href="/category/"><img class='w-[20px] ' src={{el.icon_url}} alt={{el.name}}/>{{el.name}}</a></li>
+    
+          {%endfor%}
         </ul>
       </div>
     </div>

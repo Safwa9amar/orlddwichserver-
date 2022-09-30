@@ -1,10 +1,11 @@
 from flask import Flask, render_template, url_for, request, redirect, jsonify
-import json
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import os
 from os.path import join, dirname, realpath
 from flask_marshmallow import Marshmallow
+from werkzeug.utils import secure_filename
+
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/": {"origins": "*"}})
@@ -33,251 +34,12 @@ class Categories(db.Model):
 class CategoriesSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Categories
-# a Python object (dict):
-x = [
-    {
-        "id": 1,
-        "name": "burgers",
-        "img": "https://www.bell.ch/assets/images/landingpage/burgerwelt/burger-info/burger.png",
-        "icon": "burger",
-        "list": [
-            {
-                "id": 1,
-                "name": "classique",
-                "prix": 6.5,
-                "img": "https://www.bell.ch/assets/images/landingpage/burgerwelt/burger-info/burger.png",
-                "Categorie": "tacos",
-                "categoryID": 1,
-                "rating": {
-                    "stars": 4,
-                    "count": 20
-                },
-                "recipes": [
-                    {
-                        "id": 1,
-                        "recip": "Filet d'escalope",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 2,
-                        "recip": "lardinette avec sauce gruyère",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 3,
-                        "recip": " Crudités",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 4,
-                        "recip": "salade oignons rouge",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 5,
-                        "recip": "fromage cheddar",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 6,
-                        "recip": " 2 sauces au choix.",
-                        "isChecked": True
-                    }
-                ]
-            },
-            {
-                "id": 3,
-                "name": "Arabic",
-                "prix": 7.5,
-                "img": "https://www.bell.ch/assets/images/landingpage/burgerwelt/burger-info/burger.png",
-                "Categorie": "Burger",
-                "categoryID": 1,
-                "rating": {
-                    "stars": 2,
-                    "count": 11
-                },
-                "recipes": [
-                    {
-                        "id": 1,
-                        "recip": "blkazj eazle jazklj eazoej",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 2,
-                        "recip": "test faz eaz eaz eazlme kazlmk",
-                        "isChecked": True
-                    }
-                ]
-            },
-            {
-                "id": 2,
-                "name": "Turki",
-                "prix": 10.5,
-                "img": "https://www.bell.ch/assets/images/landingpage/burgerwelt/burger-info/burger.png",
-                "Categorie": "Burger",
-                "categoryID": 1,
-                "rating": {
-                    "stars": 5,
-                    "count": 12
-                },
-                "recipes": [
-                    {
-                        "id": 1,
-                        "recip": "lreoms dola d'escalope",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 2,
-                        "recip": "test for  sauce gruyère",
-                        "isChecked": True
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "id": 2,
-        "name": "tacos",
-        "img": "https://www.bell.ch/assets/images/landingpage/burgerwelt/burger-info/burger.png",
-        "icon": "tacos",
-        "list": [
-            {
-                "id": 10,
-                "name": "Turki",
-                "prix": 8.5,
-                "img": "https://www.bell.ch/assets/images/landingpage/burgerwelt/burger-info/burger.png",
-                "Categorie": "tacos",
-                "categoryID": 2,
-                "rating": {
-                    "stars": 3,
-                    "count": 113
-                },
-                "recipes": [
-                    {
-                        "id": 1,
-                        "recip": "Filet d'escalope",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 2,
-                        "recip": "lardinette avec sauce gruyère",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 3,
-                        "recip": " Crudités",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 4,
-                        "recip": "salade oignons rouge",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 5,
-                        "recip": "fromage cheddar",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 6,
-                        "recip": " 2 sauces au choix.",
-                        "isChecked": True
-                    }
-                ]
-            },
-            {
-                "id": 15,
-                "name": "Paris",
-                "prix": 9.5,
-                "img": "https://www.bell.ch/assets/images/landingpage/burgerwelt/burger-info/burger.png",
-                "Categorie": "tacos",
-                "categoryID": 2,
-                "rating": {
-                    "stars": 4,
-                    "count": 5
-                },
-                "recipes": [
-                    {
-                        "id": 1,
-                        "recip": "Filet d'escalope",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 2,
-                        "recip": "lardinette avec sauce gruyère",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 3,
-                        "recip": " Crudités",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 4,
-                        "recip": "salade oignons rouge",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 5,
-                        "recip": "fromage cheddar",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 6,
-                        "recip": " 2 sauces au choix.",
-                        "isChecked": True
-                    }
-                ]
-            },
-            {
-                "id": 33,
-                "name": "Paris",
-                "prix": 9.5,
-                "img": "https://www.bell.ch/assets/images/landingpage/burgerwelt/burger-info/burger.png",
-                "Categorie": "tacos",
-                "categoryID": 2,
-                "rating": {
-                    "stars": 4,
-                    "count": 5
-                },
-                "recipes": [
-                    {
-                        "id": 1,
-                        "recip": "Filet d'escalope",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 2,
-                        "recip": "lardinette avec sauce gruyère",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 3,
-                        "recip": " Crudités",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 4,
-                        "recip": "salade oignons rouge",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 5,
-                        "recip": "fromage cheddar",
-                        "isChecked": True
-                    },
-                    {
-                        "id": 6,
-                        "recip": " 2 sauces au choix.",
-                        "isChecked": True
-                    }
-                ]
-            }
-        ]
-    }
-]
-# convert into JSON:
-y = json.dumps(x)
+
+
+@app.context_processor
+def inject_categories():
+    data = Categories.query.order_by(Categories.id).all()
+    return dict(data=data)
 
 
 @app.route('/add_category', methods=['POST', 'GET'])
@@ -288,14 +50,16 @@ def index():
         uploaded_icon = request.files['icon']
 
         if uploaded_image.filename != '':
+            filename = secure_filename(uploaded_image.filename)
             img_file_path = os.path.join(
-                app.config['IMAGES_FOLDER'], uploaded_image.filename)
+                app.config['IMAGES_FOLDER'], filename)
             # set the file path
             print('image', img_file_path)
 
             uploaded_image.save(img_file_path)
             # save the file
         if uploaded_icon.filename != '':
+            filename = secure_filename(uploaded_icon.filename)
             icon_file_path = os.path.join(
                 app.config['ICONS_FOLDER'], uploaded_icon.filename)
             # set the file path
@@ -336,6 +100,64 @@ def login():
 def Test():
     dd = Categories.query.order_by(Categories.id).all()
     return render_template('categories.html', data=dd)
+
+
+@app.route('/delete/<int:id>')
+def Delete(id):
+    item_to_delete = Categories.query.get_or_404(id)
+    try:
+        db.session.delete(item_to_delete)
+        db.session.commit()
+    except:
+        print('some error')
+
+    return redirect('/categories')
+
+
+@app.route('/update_category/<int:id>', methods=['GET', 'POST'])
+def Update(id):
+    item_to_update = Categories.query.get_or_404(id)
+
+
+    if request.method == 'POST':
+        updated_uploaded_image = request.files['image']
+        updated_uploaded_icon = request.files['icon']
+
+        if updated_uploaded_image.filename != '':
+            filename = secure_filename(updated_uploaded_image.filename)
+
+            updated_img_file_path = os.path.join(
+                app.config['IMAGES_FOLDER'], filename)
+            # set the file path
+            print('image', updated_img_file_path)
+
+            updated_uploaded_image.save(updated_img_file_path)
+            # save the file
+        if updated_uploaded_icon.filename != '':
+            filename = secure_filename(updated_uploaded_icon.filename)
+
+            updated_icon_file_path = os.path.join(
+                app.config['ICONS_FOLDER'], filename)
+            # set the file path
+            print('image', updated_icon_file_path)
+
+            updated_uploaded_icon.save(updated_icon_file_path)
+
+        item_to_update.name = request.form['name']
+        item_to_update.icon_url = updated_icon_file_path
+        item_to_update.img_url = updated_img_file_path
+
+        db.session.commit()
+        try:
+            return redirect('/categories')
+        except:
+            print('some erroe in updating')
+
+       
+    else:
+
+     return render_template('updatecategory.html', el=item_to_update)
+
 
 
 if __name__ == '__main__':
