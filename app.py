@@ -133,7 +133,7 @@ def api():
                                 isCheked = recip['isCheked']
                                 lits2.append(
                                     {'id': id, 'name': name, 'isCheked': isCheked})
-                out['recipes'] = lits2
+                    out['recipes'] = lits2
 
         for el in list:
             el.pop('_recipes')
