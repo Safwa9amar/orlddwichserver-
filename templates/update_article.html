@@ -1,0 +1,66 @@
+{%extends 'base.html' %} {%block body%}
+
+<form
+  method="POST"
+  action="/update_article/{{el.id}}"
+  class="m-10"
+  enctype="multipart/form-data"
+>
+  <input type="hidden" name="category_id" id="category_id" />
+  <fieldset class="flex flex-col items-stratch gap-3">
+    <div class="form-control">
+      <label class="input-group input-group-vertical">
+        <span>Nom de l'article</span>
+        <input
+          type="text"
+          placeholder="ex : classic"
+          class="input input-bordered w-full"
+          name="name"
+          id="name"
+          value="{{el.name}}"
+        />
+      </label>
+    </div>
+    <div class="form-control">
+      <label class="input-group">
+        <span>Prix </span>
+        <input
+          type="text"
+          placeholder="€"
+          class="input input-bordered w-full"
+          name="price"
+          id="price"
+          value="{{el.prix}}"
+        />
+      </label>
+    </div>
+    <div class="form-control">
+      <label class="input-group">
+        <span>Photo</span>
+        <input
+          type="file"
+          class="input input-bordered h-full py-2 my-auto"
+          name="photo"
+          id="photo"
+        />
+      </label>
+    </div>
+
+    <div class="form-control">
+      <label class="input-group input-group-vertical">
+        <span>la recette</span>
+        <textarea
+          name="recip"
+          id="recip"
+          class="textarea textarea-bordered"
+          placeholder="Séparez les éléments avec ( , ) Elément 1, Elément 2, ... etc"
+        >
+{{el.recipes}}</textarea
+        >
+      </label>
+    </div>
+    <button class="btn btn-success self-end">Mise à jour</button>
+  </fieldset>
+</form>
+
+{%endblock%}

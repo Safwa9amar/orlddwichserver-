@@ -9,10 +9,10 @@ from marshmallow_sqlalchemy.fields import Nested
 # from os.path import join, dirname, realpath
 import os
 from unicodedata import category
-from flask import Flask, render_template, url_for, request, redirect, jsonify
+from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Column, ForeignKey, delete
 
 from sqlalchemy.orm import sessionmaker, relationship, joinedload
 
@@ -80,14 +80,12 @@ class RecipeSchema(ma.SQLAlchemyAutoSchema):
         include_fk = True
 
 
-
-
 class FoodSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Food
         include_relationships = True
         load_instance = True
-        recipes = Nested(RecipeSchema, many=True , exclude=('name',))
+        recipes = Nested(RecipeSchema, many=True, exclude=('name',))
 
 
 class CategoriesSchema(ma.SQLAlchemyAutoSchema):
@@ -120,7 +118,7 @@ def api():
         icon = output['icon_url']
         print(output['food_category'])
         list = []
-       
+
         for food_id in output['food_category']:
             for out in output2:
                 if food_id == out['id']:
@@ -133,11 +131,12 @@ def api():
                                 id = recip['id']
                                 name = recip['name']
                                 isCheked = recip['isCheked']
-                                lits2.append({'id': id, 'name': name, 'isCheked': isCheked})
+                                lits2.append(
+                                    {'id': id, 'name': name, 'isCheked': isCheked})
                 out['recipes'] = lits2
 
-        # # for el in list:
-        #     el.pop('_recipes')
+        for el in list:
+            el.pop('_recipes')
 
         category = {'id': _id, 'name':  str(_name),
                     'img': str(img), 'icon': str(icon), 'list': list}
@@ -210,7 +209,7 @@ def Category(id):
             # set the file path
             uploaded_image.save(img_file_path)
 
-        # try:
+        try:
             food = Food(
                 name=food_name,
                 prix=food_price,
@@ -228,12 +227,11 @@ def Category(id):
                     name=recip,
                     isCheked=True,
                     FoodID=food.id,
-                    # food = Food.name
                 ))
             db.session.commit()
             return redirect(f'/category/{id}')
-        # except:
-            # print('some error')
+        except:
+            print('some error')
     else:
         print('...')
         # handle add item  to category requests
@@ -252,6 +250,26 @@ def Delete(id):
         print('some error')
 
     return redirect('/categories')
+
+
+@app.route('/delete_article/<int:id>')
+def DeleteArticle(id):
+    item_to_delete = Food.query.get_or_404(id)
+    recipes_to_delete = Recipe.query.all()
+   
+    print(recipes_to_delete)
+    # try:
+
+    # except:
+        # print('some error')
+    db.session.delete(item_to_delete)
+
+    for item in recipes_to_delete:
+        if item.FoodID == id:
+            db.session.delete(item)
+
+    db.session.commit()
+    return redirect(f'/category/{item_to_delete.categoryID}')
 
 
 @app.route('/update_category/<int:id>', methods=['GET', 'POST'])
@@ -295,6 +313,50 @@ def Update(id):
     else:
 
         return render_template('updatecategory.html', el=item_to_update)
+
+
+@app.route('/update_article/<int:id>', methods=['GET', 'POST'])
+def UpdateArticle(id):
+    item_to_update = Food.query.get_or_404(id)
+
+    if request.method == 'POST':
+
+        if request.form:
+            food_name = request.form['name']
+            food_price = request.form['price']
+            food_recips = request.form['recip']
+            article_uploaded_image = request.files['photo']
+
+            if article_uploaded_image.filename != '':
+                filename = f'food_{secure_filename(article_uploaded_image.filename)}'
+
+                article_img_file_path = os.path.join(
+                    app.config['IMAGES_FOLDER'], filename)
+                # set the file path
+                article_uploaded_image.save(article_img_file_path)
+                # save the file
+
+            item_to_update.name = food_name
+            item_to_update.prix = food_price
+            item_to_update.recipes = food_recips
+            item_to_update.img_url = url_for(
+                'static', filename=f'images/{filename}', _external=True)
+
+            try:
+                db.session.commit()
+                return redirect(f'/category/{item_to_update.categoryID}')
+            except:
+                print('some erroe in updating')
+
+    else:
+
+        return render_template('update_article.html', el=item_to_update, Recipes=item_to_update.recipes)
+
+
+@app.errorhandler(404)
+def not_found(e):
+    """Page not found."""
+    return make_response(render_template("404.html"), 404)
 
 
 if __name__ == '__main__':
