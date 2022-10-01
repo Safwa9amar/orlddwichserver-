@@ -34,14 +34,14 @@
           <td>
             <div class="flex items-center space-x-3">
               <div class="w-12 h-12">
-                <img src="{{url_for('static', filename='images/'+ el.img_url)}}" alt="{{el.name}}" />
+                <img src={{el.img_url}} alt="{{el.name}}" />
               </div>
               <div class="font-bold">{{el.name}}</div>
             </div>
           </td>
           <td>
             <div class="w-12 h-12">
-              <img src="{{url_for('static', filename='icons/' + el.icon_url)}}" alt="{{el.name}}" />
+              <img src={{el.icon_url}} alt="{{el.name}}" />
             </div>
           </td>
           <th>

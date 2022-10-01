@@ -48,6 +48,7 @@ class Food(db.Model):
     name = db.Column(db.String(200), nullable=False)
     prix = db.Column(db.String, nullable=False)
     img_url = db.Column(db.String(200), nullable=False)
+    Categorie = db.Column(db.String(200), nullable=False)
     rating = db.Column(db.Integer, nullable=True)
     recipes = db.Column(db.String, nullable=False)
     # category id
@@ -58,9 +59,35 @@ class Food(db.Model):
         return '<Food %r>' % self.id
 
 
+class Recipe(db.Model):
+    __tablename__ = 'recipes'
+    # food data
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    isCheked = db.Column(db.Boolean)
+    # category id
+    FoodID = db.Column(db.Integer, ForeignKey("food_category.id"))
+    food = db.relationship('Food', backref='_recipes')
+
+    def __repr__(self) -> str:
+        return '<Recip %r>' % self.id
+
+
+class RecipeSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Recipe
+        load_instance = True
+        include_fk = True
+
+
+
+
 class FoodSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Food
+        include_relationships = True
+        load_instance = True
+        recipes = Nested(RecipeSchema, many=True , exclude=('name',))
 
 
 class CategoriesSchema(ma.SQLAlchemyAutoSchema):
@@ -81,21 +108,39 @@ def inject_categories():
 def api():
     categories = Categories.query.all()
     foods = Food.query.all()
+    recipes = Recipe.query.all()
     outputs = CategoriesSchema(many=True).dump(categories)
     output2 = FoodSchema(many=True).dump(foods)
+    recipes = RecipeSchema(many=True).dump(recipes)
     newOutputs = []
     for output in outputs:
         _id = output['id']
-        name = output['name']
+        _name = output['name']
         img = output['img_url']
         icon = output['icon_url']
+        print(output['food_category'])
         list = []
+       
         for food_id in output['food_category']:
             for out in output2:
                 if food_id == out['id']:
                     list.append(out)
-        category = {'id': str(_id), 'name':  str(name),
-                    'img': url_for('static', filename='images/' + str(img), _external=True), 'icon': url_for('static', filename='icons/' + str(icon)), 'list': list}
+                    lits2 = []
+                    for recip in recipes:
+                        for r_id in out['_recipes']:
+                            if recip['id'] == int(r_id):
+                                print(recip['id'], r_id)
+                                id = recip['id']
+                                name = recip['name']
+                                isCheked = recip['isCheked']
+                                lits2.append({'id': id, 'name': name, 'isCheked': isCheked})
+                out['recipes'] = lits2
+
+        # # for el in list:
+        #     el.pop('_recipes')
+
+        category = {'id': _id, 'name':  str(_name),
+                    'img': str(img), 'icon': str(icon), 'list': list}
         newOutputs.append(category)
     # print(newOutputs)
 
@@ -119,7 +164,6 @@ def showCatgeories():
             img_file_path = os.path.join(
                 app.config['IMAGES_FOLDER'], img_filename)
             # set the file path
-            print('image', img_file_path)
 
             uploaded_image.save(img_file_path)
             # save the file
@@ -129,16 +173,16 @@ def showCatgeories():
                 app.config['ICONS_FOLDER'], icon_filename)
             # set the file path
 
-            print('image', icon_file_path)
-
             uploaded_icon.save(icon_file_path)
 
         try:
 
             db.session.add(Categories(
                 name=request.form['name'],
-                img_url=img_filename,
-                icon_url=icon_filename
+                img_url=url_for(
+                    'static', filename=f'images/{img_filename}', _external=True),
+                icon_url=url_for(
+                    'static', filename=f'icons/{icon_filename}', _external=True)
             ))
             db.session.commit()
             return redirect('/categories')
@@ -166,25 +210,30 @@ def Category(id):
             # set the file path
             uploaded_image.save(img_file_path)
 
-        try:
+        # try:
             food = Food(
                 name=food_name,
                 prix=food_price,
-                img_url=food_img_filename,
+                img_url=url_for(
+                    'static', filename=f'images/{food_img_filename}', _external=True),
                 rating=3,
                 categoryID=item_category.id,
+                Categorie=item_category.name,
                 recipes=food_recips
             )
             db.session.add(food)
-            # db.session.flush()
-            # db.session.add(Recip(
-            #     name=food_recips,
-            #     food_id=f.id
-            # ))
+            db.session.flush()
+            for recip in food_recips.split(','):
+                db.session.add(Recipe(
+                    name=recip,
+                    isCheked=True,
+                    FoodID=food.id,
+                    # food = Food.name
+                ))
             db.session.commit()
             return redirect(f'/category/{id}')
-        except:
-            print('some error')
+        # except:
+            # print('some error')
     else:
         print('...')
         # handle add item  to category requests
