@@ -95,7 +95,7 @@ def api():
                 if food_id == out['id']:
                     list.append(out)
         category = {'id': str(_id), 'name':  str(name),
-                    'img': url_for('static', filename='images/' + str(img), externel=True), 'icon': url_for('static', filename='icons/' + str(icon)), 'list': list}
+                    'img': url_for('static', filename='images/' + str(img), _external=True), 'icon': url_for('static', filename='icons/' + str(icon)), 'list': list}
         newOutputs.append(category)
     # print(newOutputs)
 
