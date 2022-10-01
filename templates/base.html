@@ -21,8 +21,12 @@
     {%block head%}{%endblock%}
   </head>
   <body>
-    <div class="navbar bg-base-100">
- 
+   
+    <div class="drawer">
+      <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+
+      <div class="drawer-content flex flex-col items-center">
+         <div class="navbar bg-base-100">
       <div class="flex-none">
         <label class="btn btn-circle swap swap-rotate" for="my-drawer">
           <!-- this hidden checkbox controls the state -->
@@ -76,10 +80,6 @@
         </button>
       </div>
     </div>
-    <div class="drawer">
-      <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-
-      <div class="drawer-content flex  justify-center">
         {%block body%} {%endblock%}
       </div>
       <div class="drawer-side">
@@ -87,9 +87,19 @@
         <ul class="menu p-4 overflow-y-auto w-80 bg-base-100 text-base-content">
           <!-- Sidebar content here -->
           <li><a href="/categories">Catégories</a></li>
+          <div class="divider"></div>
+
           {%for el in data%}
-            <li ><a href="/category/"><img class='w-[20px] ' src={{el.icon_url}} alt={{el.name}}/>{{el.name}}</a></li>
-    
+          <li>
+            <a href="/category/{{el.id}}"
+              ><img
+                class="w-[20px]"
+                src={{url_for('static' , filename='icons/' + el.icon_url )}}
+                alt="{{el.name}}"
+              />{{el.name}}</a
+            >
+          </li>
+
           {%endfor%}
         </ul>
       </div>

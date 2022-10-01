@@ -11,9 +11,9 @@
           </div>
         </div>
         {%endif%}
-    <a class="btn btn-sm btn-success m-4" href="/add_category"
-      ><i class="fa-solid fa-plus mx-2"></i> Ajouter une catégorie</a
-    >
+<label for="my-modal-3" class="btn btn-sm btn-success m-4">Ajouter une catégorie</label>
+
+    
   </div>
 
   <div class="overflow-x-auto w-full">
@@ -34,14 +34,14 @@
           <td>
             <div class="flex items-center space-x-3">
               <div class="w-12 h-12">
-                <img src="{{el.img_url}}" alt="{{el.name}}" />
+                <img src="{{url_for('static', filename='images/'+ el.img_url)}}" alt="{{el.name}}" />
               </div>
               <div class="font-bold">{{el.name}}</div>
             </div>
           </td>
           <td>
             <div class="w-12 h-12">
-              <img src="{{el.icon_url}}" alt="{{el.name}}" />
+              <img src="{{url_for('static', filename='icons/' + el.icon_url)}}" alt="{{el.name}}" />
             </div>
           </td>
           <th>
@@ -63,6 +63,68 @@
       </tbody>
     </table>
   </div>
+
+
+
+<!-- The button to open modal -->
+
+<!-- Put this part before </body> tag -->
+<input type="checkbox" id="my-modal-3" class="modal-toggle" />
+<div class="modal">
+  <div class="modal-box relative">
+    <label for="my-modal-3" class="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
+    <h3 class="text-lg font-bold">Ajouter une catégorie</h3>
+    <div class="divider"></div>
+
+  <form
+          id="category"
+          action="/categories"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <fieldset class="flex flex-col gap-4">
+            <div class="form-control">
+              <label class="input-group input-group-vertical">
+                <span
+                  ><i class="fa-solid fa-sitemap mx-2"></i>catégorie nom</span
+                >
+                <input
+                  type="text"
+                  placeholder="ex : burger"
+                  class="input input-bordered"
+                  id="name"
+                  name="name"
+                />
+              </label>
+            </div>
+            <div class="form-control">
+              <label class="input-group input-group-vertical">
+                <span><i class="fa-solid fa-image mx-2"></i> Image</span>
+                <input
+                  type="file"
+                  name="image"
+                  id="image"
+                  class="input input-bordered p-2"
+                />
+              </label>
+            </div>
+            <div class="form-control">
+              <label class="input-group input-group-vertical">
+                <span><i class="fa-solid fa-icons mx-2"></i>icon</span>
+                <input
+                  type="file"
+                  name="icon"
+                  id="icon"
+                  class="input input-bordered p-2"
+                />
+              </label>
+            </div>
+            <button class="btn btn-success self-end">Ajouter</button>
+          </fieldset>
+        </form>
+ </div>
 </div>
+      </div>
+
 
 {%endblock%}

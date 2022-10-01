@@ -1,0 +1,131 @@
+{%extends 'base.html' %} {%block body%}
+
+<div class="flex  items-center justify-end w-full">
+<div class="gap-2 badge p-4">
+  {{item.name}}
+  <div class="badge badge-secondary">{{food_query.count()}}</div>
+</div>
+  <!-- The button to open modal -->
+  <label for="my-modal-3" class="btn btn-sm btn-success  m-5"
+  ><i class="fa-solid fa-plus mx-2"></i> Ajouter
+</label>
+</div>
+<div class="overflow-x-auto w-full">
+  <table class="table w-full mx-auto">
+    <!-- head -->
+    <thead>
+      <tr>
+        <th>l'article</th>
+        <th>prix</th>
+        <th>categorie</th>
+        <th>Recettes</th>
+        <th>Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%for el in food_query%}
+
+      <tr>
+        <td>
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12">
+              <img
+                src="{{url_for('static', filename='images/'+ el.img_url)}}"
+                alt="{{el.name}}"
+              />
+            </div>
+            <div class="font-bold">{{el.name}}</div>
+          </div>
+        </td>
+
+        <td>{{el.prix}}</td>
+        <td>{{item.name}}</td>
+        <td>{{el.recipes}}</td>
+
+        <th>
+          <a
+            href="/update_category/{{el.id}}"
+            class="btn btn-xs btn-outline btn-success"
+          >
+            <i class="fa-solid fa-pen-to-square mx-2"></i>Éditer
+          </a>
+          <a href="/delete/{{el.id}}" class="btn btn-xs btn-outline btn-error">
+            <i class="fa-solid fa-trash mx-2"></i>Retirer
+          </a>
+        </th>
+      </tr>
+      {%endfor%}
+    </tbody>
+  </table>
+</div>
+
+<!-- Put this part before </body> tag -->
+<input type="checkbox" id="my-modal-3" class="modal-toggle" />
+<div class="modal">
+  <div class="modal-box relative">
+    <label for="my-modal-3" class="btn btn-sm btn-circle absolute right-2 top-2"
+      >✕</label
+    >
+    <h3 class="text-lg font-bold">Ajouter des éléments à la liste</h3>
+    <form
+      method="POST"
+      action="/category/{{item.id}}"
+      class="m-10"
+      enctype="multipart/form-data"
+    >
+      <input type="hidden" name="category_id" id="category_id" />
+      <fieldset class="flex flex-col items-stratch gap-3">
+        <div class="form-control">
+          <label class="input-group input-group-vertical">
+            <span>Nom de l'article</span>
+            <input
+              type="text"
+              placeholder="ex : classic"
+              class="input input-bordered w-full"
+              name="name"
+              id="name"
+            />
+          </label>
+        </div>
+        <div class="form-control">
+          <label class="input-group">
+            <span>Prix </span>
+            <input
+              type="text"
+              placeholder="€"
+              class="input input-bordered w-full"
+              name="price"
+              id="price"
+            />
+          </label>
+        </div>
+        <div class="form-control">
+          <label class="input-group">
+            <span>Photo</span>
+            <input
+              type="file"
+              class="input input-bordered h-full py-2 my-auto"
+              name="photo"
+              id="photo"
+            />
+          </label>
+        </div>
+
+        <div class="form-control">
+          <label class="input-group input-group-vertical">
+            <span>la recette</span>
+            <textarea
+              name="recip"
+              id="recip"
+              class="textarea textarea-bordered"
+              placeholder="Séparez les éléments avec ( , ) Elément 1, Elément 2, ... etc"
+            ></textarea>
+          </label>
+        </div>
+        <button class="btn btn-success self-end">Ajouter</button>
+      </fieldset>
+    </form>
+  </div>
+</div>
+
+{%endblock%}
