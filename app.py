@@ -16,7 +16,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required , lo
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-from flask_mail import Mail
+from flask_mail import Mail, Message
 
 
 app = Flask(__name__)
@@ -24,6 +24,16 @@ cors = CORS(app, resources={r"/api": {"origins": "http://localhost:3000"}})
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
+
+app.config['MAIL_SERVER']='smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'hassanih97@gmail.com'
+app.config['MAIL_PASSWORD'] = 'astro0674020244'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True 
+
+mail = Mail(app)
+mail.init_app(app)
 
 login_manager = LoginManager()
 
@@ -439,6 +449,11 @@ def UpdateArticle(id):
 
 @app.route('/recover_pass')
 def recover():
+    msg = Message('Hello', recipients='hassani.hamza.0397@gmail.com',  sender=['hassanih97@gmail.com'])
+    msg.body = "Hello Flask message sent from Flask-Mail , this mail for pass recover"
+    
+    mail.send(msg)
+
     return render_template('login.html')
 
 @app.errorhandler(404)
