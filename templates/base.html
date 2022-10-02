@@ -22,7 +22,7 @@
     {%block head%}{%endblock%}
   </head>
   <body>
-   
+    
     <div class="drawer">
       <input id="my-drawer" type="checkbox" class="drawer-toggle" />
 
@@ -105,5 +105,19 @@
         </ul>
       </div>
     </div>
+
+
+  <div class="modal" id="my-modal-2">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">Voulez-vous vraiment  supprimer!</h3>
+
+      <div class="modal-action">
+        <span id="del_id_tagret"> </span>
+        <a href="#" class="btn">Non</a>
+      </div>
+    </div>
+  </div>
+
   </body>
+  <script src={{url_for('static',filename='js/index.js')}}></script>
 </html>

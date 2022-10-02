@@ -116,7 +116,6 @@ def api():
         _name = output['name']
         img = output['img_url']
         icon = output['icon_url']
-        print(output['food_category'])
         list = []
 
         for food_id in output['food_category']:
@@ -127,7 +126,6 @@ def api():
                     for recip in recipes:
                         for r_id in out['_recipes']:
                             if recip['id'] == int(r_id):
-                                print(recip['id'], r_id)
                                 id = recip['id']
                                 name = recip['name']
                                 isCheked = recip['isCheked']
@@ -257,7 +255,6 @@ def DeleteArticle(id):
     item_to_delete = Food.query.get_or_404(id)
     recipes_to_delete = Recipe.query.all()
    
-    print(recipes_to_delete)
     # try:
 
     # except:
@@ -281,28 +278,30 @@ def Update(id):
         updated_uploaded_icon = request.files['icon']
 
         if updated_uploaded_image.filename != '':
-            filename = secure_filename(updated_uploaded_image.filename)
+            img_filename = f'category_{secure_filename(updated_uploaded_image.filename)}'
 
             updated_img_file_path = os.path.join(
-                app.config['IMAGES_FOLDER'], filename)
+                app.config['IMAGES_FOLDER'], img_filename)
             # set the file path
             print('image', updated_img_file_path)
 
             updated_uploaded_image.save(updated_img_file_path)
             # save the file
         if updated_uploaded_icon.filename != '':
-            filename = secure_filename(updated_uploaded_icon.filename)
+            icon_filename = f'category_{secure_filename(updated_uploaded_icon.filename)}'
 
             updated_icon_file_path = os.path.join(
-                app.config['ICONS_FOLDER'], filename)
+                app.config['ICONS_FOLDER'], icon_filename)
             # set the file path
             print('image', updated_icon_file_path)
 
             updated_uploaded_icon.save(updated_icon_file_path)
 
         item_to_update.name = request.form['name']
-        item_to_update.icon_url = updated_icon_file_path
-        item_to_update.img_url = updated_img_file_path
+        item_to_update.icon_url = url_for(
+            'static', filename=f'icons/{icon_filename}', _external=True)  # updated_icon_file_path
+        item_to_update.img_url = url_for(
+            'static', filename=f'images/{img_filename}', _external=True)
 
         db.session.commit()
         try:

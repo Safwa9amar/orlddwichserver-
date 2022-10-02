@@ -47,7 +47,9 @@
             <i class="fa-solid fa-pen-to-square mx-2"></i>Éditer
           </a>
           <a
-            href="/delete_article/{{el.id}}"
+            href="#my-modal-2"
+            delete-data={{el.id}}
+            delete_url="/delete_article/{{el.id}}"
             class="btn btn-xs btn-outline btn-error"
           >
             <i class="fa-solid fa-trash mx-2"></i>Retirer
