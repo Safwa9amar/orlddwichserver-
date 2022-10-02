@@ -1,23 +1,43 @@
-{%extends 'base.html'%} 
-
-{% block body%}
-
-<div class="hero min-h-screen bg-base-200">
-  <div class="hero-content flex-col lg:flex-row-reverse">
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href={{ url_for('static', filename='logo.png') }} type="image/x-icon">
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@2.31.0/dist/full.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      src="https://kit.fontawesome.com/7265835527.js"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/main.css') }}"
+    />
+    {%block head%}{%endblock%}
+  </head>
+  <body>
+<div class="hero w-1/2 mx-auto min-h-screen ">
+  <div class="hero-content flex-col lg:flex-row-reverse w-full">
     
-    <div class="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
-      <div class="card-body">
+    <div class="card  flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+      <form action={{url_for('login')}} method="POST" class="card-body">
         <div class="form-control">
           <label class="label">
             <span class="label-text">User</span>
           </label>
-          <input type="text" placeholder="username" class="input input-bordered" />
+          <input type="text" name="username" placeholder="username" class="input input-bordered" required/>
         </div>
         <div class="form-control">
           <label class="label">
             <span class="label-text">Password</span>
           </label>
-          <input type="text" placeholder="password" class="input input-bordered" />
+          <input type="password" name="password" placeholder="password" class="input input-bordered" required/>
           <label class="label">
             <a href="#" class="label-text-alt link link-hover">Forgot password?</a>
           </label>
@@ -25,13 +45,12 @@
         <div class="form-control mt-6">
           <button class="btn btn-primary">Login</button>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 </div>
 
 
-
-
-
-{%endblock%}
+  </body>
+  <script defer src={{url_for('static',filename='js/index.js')}}></script>
+</html>

@@ -34,17 +34,6 @@
         />
       </label>
     </div>
-    <div class="form-control">
-      <label class="input-group">
-        <span>Photo</span>
-        <input
-          type="file"
-          class="input input-bordered h-full py-2 my-auto"
-          name="photo"
-          id="photo"
-        />
-      </label>
-    </div>
 
     <div class="form-control">
       <label class="input-group input-group-vertical">
@@ -55,8 +44,46 @@
           class="textarea textarea-bordered"
           placeholder="Séparez les éléments avec ( , ) Elément 1, Elément 2, ... etc"
         >
-{{el.recipes}}</textarea
+{{el.recipes}}
+</textarea
         >
+      </label>
+    </div>
+
+    <div class="form-control">
+      <label class="input-group">
+        <div class="flex justify-center items-center w-full">
+          <label
+            for="photo"
+            class="flex flex-col justify-center items-center w-full h-64 bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+          >
+            <div
+              class="flex flex-col justify-center items-center p-2 text-center"
+            >
+              <div class="w-24 my-2">
+                <img
+                  id="uploadImg"
+                  class="w-full h-full m-"
+                  src="{{el.img_url}}"
+                />
+              </div>
+              <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                <span class="font-semibold">Cliquez pour télécharger</span> ou
+                glisser-déposer
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                PNG, JPG or GIF
+              </p>
+            </div>
+            <input
+              accept=".png , .jpg , .jpeg , .gif"
+              name="photo"
+              id="photo"
+              type="file"
+              class="hidden"
+            />
+          </label>
+        </div>
       </label>
     </div>
     <button class="btn btn-success self-end">Mise à jour</button>

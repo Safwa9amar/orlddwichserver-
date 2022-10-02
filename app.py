@@ -1,20 +1,22 @@
 
-from fileinput import filename
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
-from marshmallow import fields, Schema
 from marshmallow_sqlalchemy.fields import Nested
-
 
 # from os.path import join, dirname, realpath
 import os
-from unicodedata import category
-from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response
+from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response, flash
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, ForeignKey, delete
+from sqlalchemy import  ForeignKey
 
-from sqlalchemy.orm import sessionmaker, relationship, joinedload
+
+from flask_login import LoginManager, UserMixin, login_user, login_required , logout_user
+
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
+from flask_mail import Mail
 
 
 app = Flask(__name__)
@@ -23,13 +25,40 @@ app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
+login_manager = LoginManager()
+
+login_manager.init_app(app)
+
+login_manager.login_view = 'login'
+
 # images folder
 IMAGES_FOLDER = 'static/images'
 app.config['IMAGES_FOLDER'] = IMAGES_FOLDER
 # icons folder
 ICONS_FOLDER = 'static/icons'
 app.config['ICONS_FOLDER'] = ICONS_FOLDER
+app.config['SECRET_KEY'] = 'hamza'
 
+
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(80))
+    name = db.Column(db.String(80))
+    email = db.Column(db.String(120), unique=True, nullable=False)
+
+    def __init__(self, username, password, name, email):
+        self.username = username
+        self.password = generate_password_hash(password)
+        self.name = name
+        self.email = email
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+
+    def verify_password(self, pwd):
+        return check_password_hash(self.password, pwd)
 
 class Categories(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -96,6 +125,44 @@ class CategoriesSchema(ma.SQLAlchemyAutoSchema):
         Nested(FoodSchema, many=True)
 
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user = request.form['username']
+        password = request.form['password']
+
+        user = User.query.filter_by(username=user).first()
+        print('login start', user, password)
+
+
+        if user and user.verify_password(password):
+            print('login succes')
+            login_user(user)
+            return redirect('/')
+        else:
+            flash("Login ivalido!")
+       
+    
+    return render_template('login.html')
+
+
+@app.route('/')
+@login_required
+def dashbord():
+    return render_template('index.html')
+
+
 @app.context_processor
 def inject_categories():
     data = Categories.query.order_by(Categories.id).all()
@@ -144,12 +211,8 @@ def api():
     return jsonify(newOutputs)
 
 
-@app.route('/')
-def login():
-    return render_template('login.html')
-
-
 @app.route('/categories', methods=['POST', 'GET'])
+@login_required
 def showCatgeories():
     if request.method == 'POST':
 
@@ -190,6 +253,7 @@ def showCatgeories():
 
 
 @app.route('/category/<int:id>', methods=['POST', 'GET'])
+@login_required
 def Category(id):
     item_category = Categories.query.get_or_404(id)
 
@@ -239,6 +303,7 @@ def Category(id):
 
 
 @app.route('/delete/<int:id>')
+@login_required
 def Delete(id):
     item_to_delete = Categories.query.get_or_404(id)
     try:
@@ -251,14 +316,15 @@ def Delete(id):
 
 
 @app.route('/delete_article/<int:id>')
+@login_required
 def DeleteArticle(id):
     item_to_delete = Food.query.get_or_404(id)
     recipes_to_delete = Recipe.query.all()
-   
+
     # try:
 
     # except:
-        # print('some error')
+    # print('some error')
     db.session.delete(item_to_delete)
 
     for item in recipes_to_delete:
@@ -270,6 +336,7 @@ def DeleteArticle(id):
 
 
 @app.route('/update_category/<int:id>', methods=['GET', 'POST'])
+@login_required
 def Update(id):
     item_to_update = Categories.query.get_or_404(id)
 
@@ -278,30 +345,33 @@ def Update(id):
         updated_uploaded_icon = request.files['icon']
 
         if updated_uploaded_image.filename != '':
-            img_filename = f'category_{secure_filename(updated_uploaded_image.filename)}'
+            img_filename = url_for(
+                'static', filename=f'images/category_{secure_filename(updated_uploaded_image.filename)}', _external=True)
 
             updated_img_file_path = os.path.join(
-                app.config['IMAGES_FOLDER'], img_filename)
+                app.config['IMAGES_FOLDER'], f'category_{secure_filename(updated_uploaded_image.filename)}')
             # set the file path
-            print('image', updated_img_file_path)
 
             updated_uploaded_image.save(updated_img_file_path)
             # save the file
+        else:
+            img_filename = item_to_update.img_url
+
         if updated_uploaded_icon.filename != '':
-            icon_filename = f'category_{secure_filename(updated_uploaded_icon.filename)}'
+            icon_filename = url_for(
+                'static', filename=f'icons/category_{secure_filename(updated_uploaded_icon.filename)}', _external=True)
 
             updated_icon_file_path = os.path.join(
-                app.config['ICONS_FOLDER'], icon_filename)
+                app.config['ICONS_FOLDER'], f'category_{secure_filename(updated_uploaded_icon.filename)}')
             # set the file path
-            print('image', updated_icon_file_path)
 
             updated_uploaded_icon.save(updated_icon_file_path)
+        else:
+            icon_filename = item_to_update.icon_url
 
         item_to_update.name = request.form['name']
-        item_to_update.icon_url = url_for(
-            'static', filename=f'icons/{icon_filename}', _external=True)  # updated_icon_file_path
-        item_to_update.img_url = url_for(
-            'static', filename=f'images/{img_filename}', _external=True)
+        item_to_update.icon_url = icon_filename
+        item_to_update.img_url = img_filename
 
         db.session.commit()
         try:
@@ -315,6 +385,7 @@ def Update(id):
 
 
 @app.route('/update_article/<int:id>', methods=['GET', 'POST'])
+@login_required
 def UpdateArticle(id):
     item_to_update = Food.query.get_or_404(id)
 
@@ -327,19 +398,33 @@ def UpdateArticle(id):
             article_uploaded_image = request.files['photo']
 
             if article_uploaded_image.filename != '':
-                filename = f'food_{secure_filename(article_uploaded_image.filename)}'
+                filename = url_for(
+                    'static', filename=f'images/food_{secure_filename(article_uploaded_image.filename)}', _external=True)
 
                 article_img_file_path = os.path.join(
-                    app.config['IMAGES_FOLDER'], filename)
+                    app.config['IMAGES_FOLDER'], article_uploaded_image.filename)
                 # set the file path
                 article_uploaded_image.save(article_img_file_path)
+            else:
+                filename = item_to_update.img_url
                 # save the file
 
             item_to_update.name = food_name
             item_to_update.prix = food_price
             item_to_update.recipes = food_recips
-            item_to_update.img_url = url_for(
-                'static', filename=f'images/{filename}', _external=True)
+            item_to_update.img_url = filename
+
+            recipe_db__data = Recipe.query.all()
+
+            old_recipes = []
+            new_recipes = food_recips.split(',')
+            for item in recipe_db__data:
+                if item.FoodID == id:
+                    old_recipes.append(item)
+
+            for new_recipe, old_recipe in zip(new_recipes, old_recipes):
+                dited_recip = Recipe.query.get_or_404(old_recipe.id)
+                dited_recip.name = new_recipe
 
             try:
                 db.session.commit()
@@ -352,7 +437,12 @@ def UpdateArticle(id):
         return render_template('update_article.html', el=item_to_update, Recipes=item_to_update.recipes)
 
 
+@app.route('/recover_pass')
+def recover():
+    return render_template('login.html')
+
 @app.errorhandler(404)
+@login_required
 def not_found(e):
     """Page not found."""
     return make_response(render_template("404.html"), 404)
