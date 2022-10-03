@@ -1,5 +1,138 @@
 {%extends "base.html" %} {%block body%}
+<div class="mx-auto">
+  <div class="flex flex-col md:flex-row gap-4 mt-10">
+    <div class="card w-96 bg-base-100 shadow-xl image-full">
+      <figure>
+        <img
+          src="https://img.freepik.com/vecteurs-premium/menu-du-restaurant-vintage-aliments-dessines-main-menus-cafe-illustration-modele-affiche-cuisine_102902-1669.jpg"
+          alt="Shoes"
+        />
+      </figure>
+      <div class="card-body">
+        <h2 class="stat-value"><a href="/categories">Menus</a></h2>
+        <p>{{categories_data|length}} Catégories</p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary" href="/categories">Voire</a>
+          
+        </div>
+      </div>
+    </div>
+    <div class="card w-96 bg-base-100 shadow-xl image-full">
+      <figure>
+        <img src="https://placeimg.com/400/225/arch" alt="Shoes" />
+      </figure>
+      <div class="card-body">
+        <h2 class="stat-value"><a href="/orders">Ordres</a></h2>
+        <p>Catégories</p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary" href="/orders">Voire</a>
+        </div>
+      </div>
+    </div>
+    <div class="card w-96 bg-base-100 shadow-xl image-full">
+      <figure>
+        <img src="https://placeimg.com/400/225/arch" alt="Shoes" />
+      </figure>
+      <div class="card-body">
+        <h2 class="stat-value"><a href="/clients">Clientes</a></h2>
+        <p>If a dog chews shoes whose shoes does he choose?</p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary" href="/clients">Voire</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col gap-4 mt-10">
+    <h1 class="self-start text-4xl">Demande de commande récente</h1>
+    <div class="divider"></div>
 
-<h1>hello world</h1>
+    <div class="w-full self-start flex items-start gap-4 justify-between">
+      <div class="flex gap-2">
+        <div class="avatar">
+          <div class="w-24 rounded-full">
+            <img src="https://placeimg.com/192/192/people" />
+          </div>
+        </div>
+        <div class="w-32">
+          <p>Mozarella Pizza With Random Topping.</p>
+          <p class="text-warning font-bold">#0010299</p>
+        </div>
+      </div>
+
+      <div class="">
+        <h3 class="txt-2xl font-bold">Kinda Alexa</h3>
+        <p class="text-wrap">Blue Ocean st.41551 London</p>
+      </div>
+      <div class="flex gap-1">
+        <p class="font-bold">$8.2</p>
+        <p>x1</p>
+      </div>
+      <div class="flex items-center">
+        <button class="btn btn-outline btn-success">Deleivred</button>
+        <div class="dropdown dropdown-hover">
+          <label tabindex="0" class="btn m-1">...</label>
+          <ul
+            tabindex="0"
+            class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
+          >
+            <li>
+              <a class="text-primary"
+                ><i class="fa-regular fa-circle-check"></i>Accepet order</a
+              >
+            </li>
+            <li>
+              <a class="text-error"
+                ><i class="fa-regular fa-circle-xmark"></i> Reject order</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="w-full self-start flex items-start gap-4 justify-between">
+      <div class="flex gap-2">
+        <div class="avatar">
+          <div class="w-24 rounded-full">
+            <img src="https://placeimg.com/192/192/people" />
+          </div>
+        </div>
+        <div class="w-32">
+          <p>Mozarella Pizza With Random Topping.</p>
+          <p class="text-warning font-bold">#0010299</p>
+        </div>
+      </div>
+
+      <div class="">
+        <h3 class="txt-2xl font-bold">Kinda Alexa</h3>
+        <p class="text-wrap">Blue Ocean st.41551 London</p>
+      </div>
+      <div class="flex gap-1">
+        <p class="font-bold">$8.2</p>
+        <p>x1</p>
+      </div>
+      <div class="flex items-center">
+        <button class="btn btn-outline btn-ghost">Cancled</button>
+        <div class="dropdown dropdown-hover">
+          <label tabindex="0" class="btn m-1">...</label>
+          <ul
+            tabindex="0"
+            class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
+          >
+            <li>
+              <a class="text-primary"
+                ><i class="fa-regular fa-circle-check"></i>Accepet order</a
+              >
+            </li>
+            <li>
+              <a class="text-error"
+                ><i class="fa-regular fa-circle-xmark"></i> Reject order</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 {%endblock%}

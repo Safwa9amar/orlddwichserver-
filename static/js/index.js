@@ -59,23 +59,64 @@ window.addEventListener("DOMContentLoaded", () => {
   let moon = document.getElementById("moon");
   let sun = document.getElementById("sun");  
   let theme = localStorage.getItem("theme");
-
-  if (theme === "garden") {
+  
+  if (theme === "lofi") {
     moon.classList.replace("swap-on", "swap-off");
     sun.classList.replace("swap-off", "swap-on");
+     try {
+       document
+         .querySelector(".dataTables_filter")
+         .setAttribute("style", "color:#eee !important");
+       document
+         .querySelector(".dataTables_length")
+         .setAttribute("style", "color:#eee !important");
+     } catch (error) {}
   } else {
     moon.classList.replace("swap-off", "swap-on");
     sun.classList.replace("swap-on", "swap-off");
+    
+     try {
+       document
+         .querySelector(".dataTables_length")
+         .setAttribute("style", "color:#000 !important");
+       document
+         .querySelector(".dataTables_filter")
+         .setAttribute("style", "color:#000 !important");
+     } catch (error) {}
   }
     theme_toggle.addEventListener("click", () => {
-      console.log(data_theme.getAttribute("data-theme"));
-
-      if (data_theme.getAttribute("data-theme") === "garden") {
+     
+      if (data_theme.getAttribute("data-theme") === "lofi") {
         data_theme.setAttribute("data-theme", "dracula");
+
+        try {
+          document.querySelector(".dataTables_filter").setAttribute("style", "color:#eee !important");
+          document.querySelector(".dataTables_length").setAttribute("style", "color:#eee !important");
+
+        } catch (error) {
+          
+        }
         localStorage.setItem("theme", "dracula");
       } else if (data_theme.getAttribute("data-theme") === "dracula") {
-        data_theme.setAttribute("data-theme", "garden");
-        localStorage.setItem("theme", "garden");
+
+        try {
+          document
+            .querySelector(".dataTables_length")
+            .setAttribute("style", "color:#000 !important");
+          document
+            .querySelector(".dataTables_filter")
+            .setAttribute("style", "color:#000 !important");
+        } catch (error) {
+          
+        }
+
+        data_theme.setAttribute("data-theme", "lofi");
+        localStorage.setItem("theme", "lofi");
       }
     });
+
+
+
+
+   
 });

@@ -8,15 +8,15 @@ import os
 from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response, flash
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import  ForeignKey
+from sqlalchemy import ForeignKey
 
 
-from flask_login import LoginManager, UserMixin, login_user, login_required , logout_user
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-from flask_mail import Mail, Message
+# from flask_mail import Mail, Message
 
 
 app = Flask(__name__)
@@ -25,15 +25,15 @@ app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
-app.config['MAIL_SERVER']='smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'hassanih97@gmail.com'
-app.config['MAIL_PASSWORD'] = 'astro0674020244'
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True 
+# app.config['MAIL_SERVER']='smtp.gmail.com'
+# app.config['MAIL_PORT'] = 465
+# app.config['MAIL_USERNAME'] = 'hassanih97@gmail.com'
+# app.config['MAIL_PASSWORD'] = 'astro0674020244'
+# app.config['MAIL_USE_TLS'] = False
+# app.config['MAIL_USE_SSL'] = True
 
-mail = Mail(app)
-mail.init_app(app)
+# mail = Mail(app)
+# mail.init_app(app)
 
 login_manager = LoginManager()
 
@@ -69,6 +69,7 @@ class User(db.Model, UserMixin):
 
     def verify_password(self, pwd):
         return check_password_hash(self.password, pwd)
+
 
 class Categories(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -155,22 +156,22 @@ def login():
         user = User.query.filter_by(username=user).first()
         print('login start', user, password)
 
-
         if user and user.verify_password(password):
             print('login succes')
             login_user(user)
             return redirect('/')
         else:
             flash("Login ivalido!")
-       
-    
+
     return render_template('login.html')
 
 
 @app.route('/')
 @login_required
 def dashbord():
-    return render_template('index.html')
+    dd = Categories.query.order_by(Categories.id).all()
+
+    return render_template('index.html', categories_data = dd)
 
 
 @app.context_processor
@@ -219,6 +220,23 @@ def api():
     # print(newOutputs)
 
     return jsonify(newOutputs)
+
+
+
+@app.route('/orders')
+@login_required
+def orders():
+    return render_template('orders.html')
+
+
+
+
+@app.route('/clients')
+@login_required
+def clients():
+    return render_template('clients.html')
+
+
 
 
 @app.route('/categories', methods=['POST', 'GET'])
@@ -447,14 +465,14 @@ def UpdateArticle(id):
         return render_template('update_article.html', el=item_to_update, Recipes=item_to_update.recipes)
 
 
-@app.route('/recover_pass')
-def recover():
-    msg = Message('Hello', recipients='hassani.hamza.0397@gmail.com',  sender=['hassanih97@gmail.com'])
-    msg.body = "Hello Flask message sent from Flask-Mail , this mail for pass recover"
-    
-    mail.send(msg)
+# @app.route('/recover_pass')
+# def recover():
+#     msg = Message('Hello', recipients='hassani.hamza.0397@gmail.com',  sender=['hassanih97@gmail.com'])
+#     msg.body = "Hello Flask message sent from Flask-Mail , this mail for pass recover"
 
-    return render_template('login.html')
+#     mail.send(msg)
+
+#     return render_template('login.html')
 
 @app.errorhandler(404)
 @login_required

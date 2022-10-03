@@ -8,3 +8,14 @@ html {
 body {
   width: 100%;
 }
+
+
+
+.dataTables_filter, .dataTables_length{
+  margin-block: 1rem;
+
+}
+
+/* cart blue cv */
+
+/* espace 20€ */
