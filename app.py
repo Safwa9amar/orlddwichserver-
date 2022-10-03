@@ -15,11 +15,16 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from flask_socketio import SocketIO
+
 
 # from flask_mail import Mail, Message
 
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'hamza'
+socketio = SocketIO(app)
+
 cors = CORS(app, resources={r"/api": {"origins": "http://localhost:3000"}})
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
@@ -47,7 +52,6 @@ app.config['IMAGES_FOLDER'] = IMAGES_FOLDER
 # icons folder
 ICONS_FOLDER = 'static/icons'
 app.config['ICONS_FOLDER'] = ICONS_FOLDER
-app.config['SECRET_KEY'] = 'hamza'
 
 
 class User(db.Model, UserMixin):
@@ -482,4 +486,4 @@ def not_found(e):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True)
