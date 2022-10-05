@@ -1,7 +1,6 @@
 {%extends 'base.html'%} {%block body%}
 
 <div class="overflow-x-auto w-full pt-10 px-4">
- 
   <table class="table w-full" id="orders-table">
     <!-- head -->
     <thead>
@@ -16,39 +15,43 @@
     </thead>
     <tbody>
       <!-- row 1 -->
+      {%for el in clients_data%}
+
       <tr>
         <td>
           <div class="flex items-center space-x-3">
-            <div class="avatar">
+            <!-- <div class="avatar">
               <div class="mask mask-squircle w-12 h-12">
                 <img
                   src="https://placeimg.com/192/192/people"
                   alt="Avatar Tailwind CSS Component"
                 />
               </div>
-            </div>
+            </div> -->
             <div>
-              <div class="font-bold">Hart Hagerty</div>
-              <div class="text-sm opacity-50">United States</div>
+              <div class="font-bold">{{el.id}}) {{el.Nom}} {{el.Prenom}}</div>
+              <div class="text-sm opacity-50">{{el.adress}}</div>
             </div>
           </div>
         </td>
         <td>
-          Zemlak, Daniel and Leannon
+          {{el.join_date.date()}}
           <br />
           <span class="badge badge-ghost badge-sm"
-            >Desktop Support Technician</span
+            >At {{el.join_date.strftime("%H:%M:%S")}}</span
           >
         </td>
-        <td>Purple</td>
-        <td>Purple</td>
+        <td>{{el.Nom}} {{el.Prenom}}</td>
+        <td>{{el.adress}}</td>
         <td>Purple</td>
         <th>
           <button class="btn btn-ghost btn-xs">details</button>
         </th>
       </tr>
+      {%endfor%}
     </tbody>
     <!-- foot -->
+    {%if clients_data|length > 15 %}
     <tfoot>
       <tr>
         <th>Order ID</th>
@@ -59,6 +62,7 @@
         <th>statut de la commande</th>
       </tr>
     </tfoot>
+    {%endif%}
   </table>
 </div>
 

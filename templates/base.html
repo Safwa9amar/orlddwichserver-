@@ -24,6 +24,11 @@
       rel="stylesheet"
       href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css"
     />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+      integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+      crossorigin="anonymous"
+    ></script>
     {%block head%}{%endblock%}
   </head>
 
@@ -32,7 +37,7 @@
       <input id="my-drawer" type="checkbox" class="drawer-toggle" />
 
       <div class="drawer-content flex flex-col items-center">
-        <div class="navbar bg-base-100">
+        <div class="navbar pt-4 bg-base-100">
           <div class="flex-none">
             <label
               id="toggle-menu"
@@ -79,18 +84,24 @@
 
           <div class="flex gap-10">
             <div class="indicator">
-              <span class="indicator-item badge badge-secondary">3</span>
+              <span
+                class="indicator-item badge badge-secondary"
+                id="notification_indicator"
+                >3</span
+              >
               <div class="dropdown">
                 <label tabindex="0" class="btn h-fit"
                   ><i class="fa-solid fa-bell"></i
                 ></label>
                 <div
                   tabindex="0"
-                  class="dropdown-content card card-compact w-64 p-2 shadow bg-primary text-primary-content"
+                  class="dropdown-content card card-compact w-80 p-2 shadow bg-primary text-primary-content"
                 >
                   <div class="card-body">
                     <h3 class="card-title">Notifications</h3>
-                    <p>you can use any element as a dropdown.</p>
+                    <span id="notification_area">
+                      
+                    </span>
                   </div>
                 </div>
               </div>
@@ -168,6 +179,8 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
   <script defer src="{{url_for('static',filename='js/index.js' )}}"></script>
+  <script defer src="{{url_for('static', filename='js/socket.js')}}"></script>
+
   <script>
     $(document).ready(function () {
       $("#orders-table").DataTable({

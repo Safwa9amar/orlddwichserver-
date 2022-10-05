@@ -2,11 +2,12 @@
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy.fields import Nested
+from datetime import datetime, timedelta
 
 # from os.path import join, dirname, realpath
 import os
-from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response, flash
-from flask_cors import CORS
+from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response, flash, Response
+from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey
 
@@ -15,30 +16,32 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, send, emit
 
 
-# from flask_mail import Mail, Message
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+from flask_jwt_extended import decode_token
+from flask_jwt_extended import create_refresh_token
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'hamza'
-socketio = SocketIO(app)
+app.config['SECRET_KEY'] = 'acuUl88CzudhD4ierZDZZeyp5eRmiuz8'
+# Change this!
+app.config["JWT_SECRET_KEY"] = "mU0acnVXyjYMXkOlcFhJohofJOf7iTXy"
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 cors = CORS(app, resources={r"/api": {"origins": "http://localhost:3000"}})
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
-# app.config['MAIL_SERVER']='smtp.gmail.com'
-# app.config['MAIL_PORT'] = 465
-# app.config['MAIL_USERNAME'] = 'hassanih97@gmail.com'
-# app.config['MAIL_PASSWORD'] = 'astro0674020244'
-# app.config['MAIL_USE_TLS'] = False
-# app.config['MAIL_USE_SSL'] = True
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(seconds=30)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+jwt = JWTManager(app)
 
-# mail = Mail(app)
-# mail.init_app(app)
 
 login_manager = LoginManager()
 
@@ -52,6 +55,34 @@ app.config['IMAGES_FOLDER'] = IMAGES_FOLDER
 # icons folder
 ICONS_FOLDER = 'static/icons'
 app.config['ICONS_FOLDER'] = ICONS_FOLDER
+
+
+class Customer(db.Model):
+    __tablename__ = 'customer'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(80))
+    Nom = db.Column(db.String(80),  nullable=False)
+    Prenom = db.Column(db.String(80), nullable=False)
+    Tel = db.Column(db.Integer, unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    adress = db.Column(db.String(120), unique=True, nullable=False)
+    join_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, username, password, Nom, email, Prenom, Tel, adress):
+        self.username = username
+        self.password = generate_password_hash(password)
+        self.Nom = Nom
+        self.email = email
+        self.Prenom = Prenom
+        self.Tel = Tel
+        self.adress = adress
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+
+    def verify_password(self, pwd):
+        return check_password_hash(self.password, pwd)
 
 
 class User(db.Model, UserMixin):
@@ -151,6 +182,93 @@ def logout():
     return redirect(url_for('login'))
 
 
+@app.route('/registre', methods=['GET', 'POST'])
+@cross_origin(origin='*', headers=['Content- Type', 'json'])
+def registre_client():
+    if request.method == 'POST':
+        json = request.get_json()
+        try:
+            if json['refrech'] == None:
+                return jsonify({"access_token": "invalid token"}), 201
+            if decode_token(json['refrech']):
+                identity = decode_token(json['refrech'])['sub']
+                client = Customer.query.filter_by(
+                    username=identity).first()
+                access_token = create_access_token(identity=identity)
+                userData = {
+                    "username": client.username,
+                    "Nom": client.Nom,
+                    "email": client.email,
+                    "Prenom": client.Prenom,
+                    "Tel": client.Tel,
+                }
+                return jsonify(userData), 200
+
+        except KeyError:
+            client = Customer.query.filter_by(
+                username=json['username']).first()
+            if len(json) == 2:
+                if not client:
+                    return jsonify({"access_token": "user not regsitred"}), 302
+
+                if client and client.verify_password(json['password']):
+                    access_token = create_access_token(
+                        identity=client.username)
+                    refresh_token = create_refresh_token(
+                        identity=client.username)
+                    userData = {
+                        "username": client.username,
+                        "Nom": client.Nom,
+                        "email": client.email,
+                        "Prenom": client.Prenom,
+                        "Tel": client.Tel,
+                    }
+                    return jsonify(access_token=access_token, refresh_token=refresh_token, userData=userData), 200
+
+                else:
+                    return jsonify({"access_token": "Unauthorized"}), 401
+            else:
+                clientMail = Customer.query.filter_by(
+                    email=json['email']).first()
+                clientPhone = Customer.query.filter_by(
+                    email=json['email']).first()
+
+                if client:
+                    return jsonify({'access_token': 'use already existe faild'}), 306
+                if clientMail:
+                    return jsonify({'access_token': 'use already existe faild'}), 300
+                if clientPhone:
+                    return jsonify({'access_token': 'use already existe faild'}), 300
+                else:
+                    access_token = create_access_token(
+                        identity=json['username'])
+
+                    client = Customer(
+                        username=json['username'],
+                        password=json['password'],
+                        Nom=json['nom'],
+                        Prenom=json['Prenom'],
+                        Tel=json['tel'],
+                        email=json['email'],
+                        adress=json['adress'],
+                    )
+                    db.session.add(client)
+                    db.session.commit()
+                    client = Customer.query.filter_by(
+                        username=json['username']).first()
+                    userData = {
+                        "username": client.username,
+                        "Nom": client.Nom,
+                        "email": client.email,
+                        "Prenom": client.Prenom,
+                        "Tel": client.Tel,
+                        "adress": client.adress,
+                    }
+                    return jsonify(access_token=access_token, userData=userData), 200
+
+    return Response("{'a':'b'}", status=404, mimetype='application/json')
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -175,7 +293,14 @@ def login():
 def dashbord():
     dd = Categories.query.order_by(Categories.id).all()
 
-    return render_template('index.html', categories_data = dd)
+    return render_template('index.html', categories_data=dd)
+
+
+@socketio.on('message')
+def handle_message(data):
+    send(data, broadcast=True)
+
+    print('received json: ' + str(data))
 
 
 @app.context_processor
@@ -226,21 +351,17 @@ def api():
     return jsonify(newOutputs)
 
 
-
 @app.route('/orders')
 @login_required
 def orders():
     return render_template('orders.html')
 
 
-
-
 @app.route('/clients')
 @login_required
 def clients():
-    return render_template('clients.html')
-
-
+    clients_data = Customer.query.all()
+    return render_template('clients.html', clients_data = clients_data)
 
 
 @app.route('/categories', methods=['POST', 'GET'])
@@ -468,15 +589,6 @@ def UpdateArticle(id):
 
         return render_template('update_article.html', el=item_to_update, Recipes=item_to_update.recipes)
 
-
-# @app.route('/recover_pass')
-# def recover():
-#     msg = Message('Hello', recipients='hassani.hamza.0397@gmail.com',  sender=['hassanih97@gmail.com'])
-#     msg.body = "Hello Flask message sent from Flask-Mail , this mail for pass recover"
-
-#     mail.send(msg)
-
-#     return render_template('login.html')
 
 @app.errorhandler(404)
 @login_required
