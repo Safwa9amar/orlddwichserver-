@@ -11,20 +11,13 @@ from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey, desc
 
-
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from flask_socketio import SocketIO, send, emit
 
-
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-from flask_jwt_extended import JWTManager
-from flask_jwt_extended import decode_token
-from flask_jwt_extended import create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, JWTManager, decode_token
 
 
 app = Flask(__name__)
