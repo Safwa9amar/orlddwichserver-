@@ -45,7 +45,15 @@
         <td>{{el.adress}}</td>
         <td>Purple</td>
         <th>
-          <button class="btn btn-ghost btn-xs">details</button>
+          <a
+            href="{{url_for('orders', order=Order.query.order_by(Order.id.desc()).filter_by(customer_id =
+            el.id).first().id )}}"
+            class="btn btn-ghost btn-xs text-error"
+          >
+            #{{Order.query.order_by(Order.id.desc()).filter_by(customer_id =
+            el.id).first().id}}
+            <i class="fa-solid fa-arrow-up-right-from-square mx-2"></i>
+          </a>
         </th>
       </tr>
       {%endfor%}

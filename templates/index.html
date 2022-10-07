@@ -3,17 +3,13 @@
   <div class="flex flex-col md:flex-row gap-4 mt-10">
     <div class="card w-96 bg-base-100 shadow-xl image-full">
       <figure>
-        <img
-          src="https://placeimg.com/192/192/art"
-          alt="Shoes"
-        />
+        <img src="https://placeimg.com/192/192/art" alt="Shoes" />
       </figure>
       <div class="card-body">
         <h2 class="stat-value"><a href="/categories">Menus</a></h2>
         <p>{{categories_data|length}} Catégories</p>
         <div class="card-actions justify-end">
           <a class="btn btn-primary" href="/categories">Voire</a>
-          
         </div>
       </div>
     </div>
@@ -23,7 +19,7 @@
       </figure>
       <div class="card-body">
         <h2 class="stat-value"><a href="/orders">Ordres</a></h2>
-        <p>Catégories</p>
+        <p>{{orders_data|length}} Order</p>
         <div class="card-actions justify-end">
           <a class="btn btn-primary" href="/orders">Voire</a>
         </div>
@@ -35,7 +31,7 @@
       </figure>
       <div class="card-body">
         <h2 class="stat-value"><a href="/clients">Clientes</a></h2>
-        <p>If a dog chews shoes whose shoes does he choose?</p>
+        <p>{{clients_data|length}} client</p>
         <div class="card-actions justify-end">
           <a class="btn btn-primary" href="/clients">Voire</a>
         </div>
@@ -77,7 +73,6 @@
           >
             <li>
               <a class="text-primary"
-              
                 ><i class="fa-regular fa-circle-check"></i>Accepet order</a
               >
             </li>

@@ -1,0 +1,177 @@
+{%extends "base.html"%} {%block body%}
+
+<div class="w-full p-10">
+  <div class="full">
+    <div class="flex justify-between">
+      <div class="tabs">
+        <a class="tab tab-bordered tab-active">Fromage</a>
+        <a class="tab tab-bordered">Viande</a>
+        <a class="tab tab-bordered">Crudités</a>
+        <a class="tab tab-bordered">Gratiné</a>
+        <a class="tab tab-bordered">Autre</a>
+      </div>
+      <div class="">
+        <label for="suppModel" class="btn btn-sm btn-success">Ajouter</label>
+      </div>
+    </div>
+  </div>
+  <input type="checkbox" id="suppModel" class="modal-toggle" />
+  <div class="modal">
+    <div class="modal-box relative">
+      <label
+        for="suppModel"
+        class="btn btn-sm btn-circle absolute right-2 top-2"
+        >✕</label
+      >
+      <h3 class="text-lg font-bold">Ajouter un supplément</h3>
+      <form
+        enctype="multipart/form-data"
+        method="post"
+        action="{{url_for('supplement')}}"
+        class="flex flex-col gap-4"
+      >
+        <div class="flex gap-2 justify-between items-center hidden">
+          <label class="btn btn-xs btn-success"
+            ><i class="fa-solid fa-plus"></i
+          ></label>
+        </div>
+
+        <div class="form-control">
+          <label class="input-group input-group-vertical">
+            <span>Supplément</span>
+            <input
+              name="supp"
+              list="suppList"
+              type="text"
+              placeholder="Choisir"
+              class="input input-bordered"
+            />
+          </label>
+          <datalist id="suppList" name="supp">
+            <option value="Fromage">Fromage</option>
+            <option value="Viande">Viande</option>
+            <option value="Crudités">Crudités</option>
+            <option value="Gratiné">Gratiné</option>
+            <option value="Autre">Autre</option>
+          </datalist>
+        </div>
+        <div class="form-control">
+          <label class="input-group input-group-vertical">
+            <span>Nom</span>
+            <input
+              name="nom"
+              type="text"
+              placeholder="..."
+              class="input input-bordered"
+            />
+          </label>
+        </div>
+        <div class="form-control">
+          <label class="input-group input-group-vertical">
+            <span>Prix(€)</span>
+            <input
+              name="price"
+              type="number"
+              placeholder="..."
+              class="input input-bordered"
+            />
+          </label>
+        </div>
+        <div class="form-control">
+          <span>Photo</span>
+          <label class="input-group">
+            <div class="flex justify-center items-center w-full">
+              <label
+                for="photo"
+                class="flex flex-col justify-center items-center w-full h-64 bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+              >
+                <div
+                  class="flex flex-col justify-center items-center p-2 text-center"
+                >
+                  <div class="w-24 my-2">
+                    <img
+                      id="uploadImg"
+                      class="w-full h-full m-"
+                      src="https://via.placeholder.com/150"
+                    />
+                  </div>
+                  <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span class="font-semibold">Cliquez pour télécharger</span>
+                    ou glisser-déposer
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    PNG, JPG or GIF
+                  </p>
+                </div>
+                <input
+                  accept=".png , .jpg , .jpeg , .gif"
+                  name="photo"
+                  id="photo"
+                  type="file"
+                  class="hidden"
+                />
+              </label>
+            </div>
+          </label>
+        </div>
+        <button class="btn btn-sm btn-outline btn-success">Ajouter</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="overflow-x-auto w-full px-4">
+  <table class="table w-full">
+    <!-- head -->
+    <thead>
+      <tr>
+        <th>id</th>
+        <th>Aperçu</th>
+        <th>Prix</th>
+        <th>Etat</th>
+        <th>Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%for el in supplement_data%}
+      <tr>
+        <td>#{{el.id}}</td>
+        <td>
+          <div class="flex items-center space-x-3">
+            <div class="avatar">
+              <div class="mask mask-squircle w-12 h-12">
+                <img src="{{el.img_url}}" alt="Avatar Tailwind CSS Component" />
+              </div>
+            </div>
+            <div>
+              <div class="font-bold">{{el.name}}</div>
+              <div class="text-sm opacity-50">{{el.supplement.name}}</div>
+            </div>
+          </div>
+        </td>
+        <td>€{{el.Prix}}</td>
+        <td>{{el.isAvailable}}</td>
+        <th>
+          <a
+            href="/update_category/{{el.id}}"
+            class="btn btn-xs btn-outline btn-success"
+          >
+            <i class="fa-solid fa-pen-to-square mx-2"></i>Éditer
+          </a>
+          <a
+            id="delCategory"
+            delete-data="{{el.id}}"
+            href="#my-modal-2"
+            delete_url="/delete/{{el.id}}"
+            class="btn btn-xs btn-outline btn-error"
+          >
+            <i class="fa-solid fa-trash mx-2"></i>Retirer
+          </a>
+        </th>
+      </tr>
+      {%endfor%}
+    </tbody>
+  </table>
+</div>
+
+{%endblock%}

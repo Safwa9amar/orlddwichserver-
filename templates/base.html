@@ -99,9 +99,7 @@
                 >
                   <div class="card-body">
                     <h3 class="card-title">Notifications</h3>
-                    <span id="notification_area">
-                      
-                    </span>
+                    <span id="notification_area"> </span>
                   </div>
                 </div>
               </div>
@@ -144,9 +142,10 @@
         <label for="my-drawer" class="drawer-overlay"></label>
         <ul class="menu p-4 overflow-y-auto w-80 bg-base-100 text-base-content">
           <!-- Sidebar content here -->
-          <li><a href="/categories">Menus</a></li>
-          <li><a href="/orders">Ordres</a></li>
-          <li><a href="/clients">Clientes</a></li>
+          <li><a href="{{url_for('showCatgeories')}}">Menus</a></li>
+          <li><a href="{{url_for('supplement')}}">Supplément</a></li>
+          <li><a href="{{url_for('orders')}}">Ordres</a></li>
+          <li><a href="{{url_for('clients')}}">Clientes</a></li>
           <div class="divider"></div>
 
           {%for el in data%}

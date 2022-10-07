@@ -1,0 +1,157 @@
+{%extends "base.html"%} {% block body %}
+
+<div class="w-full lg:px-10 flex flex-col gap-4">
+  <div
+    class="flex justify-between items-center bg-base-100 rounded-lg shadow-xl p-10"
+  >
+    <div class="m-4">
+      <h1 class="text-2xl">
+        Numéro de commande #{{order_data.order_id}}
+        <span class="badge badge-accent"
+          >({{order_data.DamandeType.type}})</span
+        >
+      </h1>
+      <h1 class="text-xl">
+        Le total:
+        <span class="text-bold">€{{order_data.montants}}</span>
+      </h1>
+
+      <p>{{order_data.client.Nom}} {{order_data.client.Prenom}}</p>
+      <!-- <p>{{order_data.client.adress}}</p> -->
+      <p>id : {{order_data.client.id}}</p>
+      <div class="flex gap-2">
+        <div class="badge p-2">
+          <i class="fa-solid fa-phone mx-2"></i>{{order_data.client.Tel}}
+        </div>
+        <div class="badge p-2">
+          <i class="fa-solid fa-location-dot mx-2"></i
+          >{{order_data.client.adress}}
+        </div>
+        <div class="badge p-2">
+          <i class="fa-solid fa-envelopes-bulk mx-2"></i
+          >{{order_data.client.email}}
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 text-xl">
+      {%if order_data.status ==1 %}
+      <button class="btn btn-sm btn-outline btn-warning">en attendant</button>
+      <div class="dropdown dropdown-hover dropdown-left">
+        <label tabindex="0" class="btn m-1">...</label>
+        <ul
+          tabindex="0"
+          class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
+        >
+          <li>
+            <a class="text-primary"
+              ><i class="fa-regular fa-circle-check"></i>Accepet order</a
+            >
+          </li>
+          <li>
+            <a class="text-error"
+              ><i class="fa-regular fa-circle-xmark"></i> Reject order</a
+            >
+          </li>
+        </ul>
+      </div>
+      {%endif%} {%if order_data.status ==2 %}
+      <button class="btn btn-outline btn-success">livré</button>
+      {%endif%} {%if order_data.status ==3 %}
+      <button class="btn btn-outline btn-btn-ghost">annulé</button>
+      {%endif%}
+    </div>
+  </div>
+  <div
+    class="flex justify-between items-center bg-base-100 rounded-lg shadow-xl p-10"
+  >
+    <div class="overflow-x-auto w-full">
+      <h1>Articles</h1>
+      <table class="table w-full">
+        <!-- head -->
+        <thead>
+          <tr>
+            <th>L'article</th>
+            <th>Sans</th>
+            <th>Quantité</th>
+            <th>Prix</th>
+            <th>Prix Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- row 1 -->
+          {%for article in order_data.full_order_data%}
+
+          <tr>
+            <td>
+              <div class="flex items-center space-x-3">
+                <div class="avatar">
+                  <div class="mask mask-squircle w-12 h-12">
+                    <img
+                      src="{{article.food.img_url}}"
+                      alt="Avatar Tailwind CSS Component"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div class="font-bold">{{article.food.name}}</div>
+                  <div class="text-sm opacity-50">
+                    {{article.food.category.name}}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>
+              {%for recip in article.unSelectedRecipes%}
+              <span class="badge badge-ghost badge-md"> {{recip.name}} </span>
+              {%endfor%}
+              <!-- <br />
+              <span class="badge badge-ghost badge-sm"
+                >Desktop Support Technician</span
+              > -->
+            </td>
+            <td>{{article.amount}}x</td>
+            <td>
+              €{{article.food.prix}} {%if article.isMenu %}
+              <span>+ €2 Menu</span>
+              {%endif%}
+            </td>
+            <td>
+              {%if article.isMenu %}
+
+              <span>
+                €{{(article.food.prix|float * article.amount|int) +
+                (article.amount|int * 2)}}
+              </span>
+              {%else%} €{{article.food.prix|float * article.amount|int}}
+              {%endif%}
+            </td>
+          </tr>
+          {%endfor%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {%if order_data.DamandeType.id|int == 3%}
+  <ul class="steps m-4 p-5 bg-base-100 shadow-xl rounded-lg">
+    <li class="step step-primary">
+      <p>Commande créée</p>
+      <p>{{order_data.date.date()}}</p>
+      <p>{{order_data.date.time()}}</p>
+    </li>
+    <li class="step">
+      <p>A été approuvé</p>
+      <p>jeu. 21 juil. 2020, 11:49</p>
+    </li>
+    <li class="step">
+      <p>À la livraison</p>
+      <p>sam. 23 juil. 2020, 13:24</p>
+    </li>
+    <li class="step">
+      <p>Commande livrée</p>
+      <p>sam. 23 juil. 2020, 13:24</p>
+    </li>
+  </ul>
+  {%endif%}
+</div>
+
+{%endblock%}

@@ -1,4 +1,4 @@
-
+import ast
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy.fields import Nested
@@ -9,7 +9,7 @@ import os
 from flask import Flask, render_template, url_for, request, redirect, jsonify, make_response, flash, Response
 from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, desc
 
 
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
@@ -116,6 +116,42 @@ class Categories(db.Model):
         return '<Categories %r>' % self.id
 
 
+class Supplement(db.Model):
+    __tablename__ = 'Supplement'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+
+    def __repr__(self) -> str:
+        return '<Supplement %r>' % self.id
+
+
+class ItemSupplement(db.Model):
+    __tablename__ = 'item_supplement'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    Prix = db.Column(db.String(200), nullable=False)
+    isAvailable = db.Column(db.Boolean, unique=False, default=True)
+    img_url = db.Column(db.String(200), nullable=False)
+    # Supplement id
+    supplementID = db.Column(db.Integer, ForeignKey("Supplement.id"))
+    supplement = db.relationship('Supplement', backref='item_supplement')
+
+    def __repr__(self) -> str:
+        return '<Categories %r>' % self.id
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, nullable=False)
+    order = db.Column(db.String, nullable=False)
+    order_date = db.Column(db.DateTime, default=datetime.utcnow)
+    DamandeType = db.Column(db.String, nullable=False)
+    status = db.Column(db.Integer, default=1)
+
+    def __repr__(self) -> str:
+        return '<Order %r>' % self.id
+
+
 class Food(db.Model):
     __tablename__ = 'food_category'
     # food data
@@ -176,6 +212,41 @@ def load_user(user_id):
     return User.query.get(user_id)
 
 
+@socketio.on('order')
+def handle_message(data):
+    send(data, broadcast=True)
+    client_token = decode_token(data['user'])['sub']
+    client = Customer.query.filter_by(username=str(client_token)).first()
+    order = data['order']
+    DamandeType = data['DamandeType']
+    print(client.id)
+    order_data = []
+    for el in order:
+        category_id = el['category']
+        food_id = el['id']
+        amount = el['amount']
+        isMenu = el['isMenu']
+        unSelectedRecipes = el['unSelectedRecipes']
+        order_data.append(
+            {
+                "category_id": category_id,
+                "food_id": food_id,
+                "amount": amount,
+                "isMenu": isMenu,
+                "unSelectedRecipes": unSelectedRecipes
+            }
+        )
+        order = Order(
+            customer_id=client.id,
+            order=str(order_data),
+            DamandeType=str(DamandeType)
+        )
+        db.session.add(order)
+        db.session.commit()
+
+    print({"client_id": client.id, "order": order_data})
+
+
 @app.route('/logout')
 def logout():
     logout_user()
@@ -196,6 +267,7 @@ def registre_client():
                     username=identity).first()
                 access_token = create_access_token(identity=identity)
                 userData = {
+                    "id": client.id,
                     "username": client.username,
                     "Nom": client.Nom,
                     "email": client.email,
@@ -217,6 +289,7 @@ def registre_client():
                     refresh_token = create_refresh_token(
                         identity=client.username)
                     userData = {
+                        "id": client.id,
                         "username": client.username,
                         "Nom": client.Nom,
                         "email": client.email,
@@ -257,6 +330,7 @@ def registre_client():
                     client = Customer.query.filter_by(
                         username=json['username']).first()
                     userData = {
+                        "id": client.id,
                         "username": client.username,
                         "Nom": client.Nom,
                         "email": client.email,
@@ -292,15 +366,10 @@ def login():
 @login_required
 def dashbord():
     dd = Categories.query.order_by(Categories.id).all()
+    orders_data = Order.query.all()
+    clients_data = Customer.query.all()
 
-    return render_template('index.html', categories_data=dd)
-
-
-@socketio.on('message')
-def handle_message(data):
-    send(data, broadcast=True)
-
-    print('received json: ' + str(data))
+    return render_template('index.html', categories_data=dd, orders_data=orders_data, clients_data=clients_data)
 
 
 @app.context_processor
@@ -354,14 +423,106 @@ def api():
 @app.route('/orders')
 @login_required
 def orders():
-    return render_template('orders.html')
+    selected_order = request.args.get('order')
+
+    final_data = []
+    client_orders = Order.query.order_by(desc(Order.id))
+
+    for order in client_orders:
+        costumer = Customer.query.filter_by(id=order.customer_id).first()
+        detaills = ast.literal_eval(order.order)
+        full_order_data = []
+        recip_arr = []
+        montants = []
+        for detaill in detaills:
+            montants.append(float(Food.query.filter_by(
+                id=detaill['food_id']).first().prix) * int(detaill['amount']))
+            if detaill['isMenu']:
+                montants.append(2 * int(detaill['amount']))
+            for recip in detaill['unSelectedRecipes']:
+                recip_arr.append(Recipe.query.filter_by(id=recip).first())
+            obj = {
+                "food": Food.query.filter_by(id=detaill['food_id']).first(),
+                "isMenu": detaill['isMenu'],
+                "amount": detaill['amount'],
+                "unSelectedRecipes": recip_arr
+            }
+
+            full_order_data.append(obj)
+
+        total = 0
+        for montant in montants:
+            total += float(montant)
+
+        order_data = {
+            "order_id": order.id,
+            "DamandeType": ast.literal_eval(order.DamandeType),
+            "date": order.order_date,
+            "client": costumer,
+            "adress": costumer.adress,
+            "montants": total,
+            "status": order.status,
+            "full_order_data": full_order_data
+        }
+
+        final_data.append(order_data)
+
+    try:
+        if selected_order != None:
+            for el in final_data:
+                if el['order_id'] == int(selected_order):
+                    return render_template('client_order.html', order_data=el)
+
+    except TypeError:
+        return render_template('orders.html', client_orders=final_data)
+
+    return render_template('orders.html', client_orders=final_data)
 
 
 @app.route('/clients')
 @login_required
 def clients():
     clients_data = Customer.query.all()
-    return render_template('clients.html', clients_data = clients_data)
+    return render_template('clients.html', clients_data=clients_data, Order=Order)
+
+
+@app.route('/supplement', methods=['POST', 'GET'])
+@login_required
+def supplement():
+    if request.method == "POST":
+        supp = request.form['supp'].lower()
+        name = request.form['nom']
+        Prix = request.form['price']
+        uploaded_image = request.files['photo']
+        if uploaded_image.filename != '':
+            img_filename = f"supp_{secure_filename(uploaded_image.filename)}"
+            img_file_path = os.path.join(
+                app.config['IMAGES_FOLDER'], img_filename)
+            # set the file path
+            uploaded_image.save(img_file_path)
+
+        img_url = url_for(
+            'static', filename=f'images/{img_filename}', _external=True)
+        qery = Supplement.query.filter_by(name=supp).first()
+        suppId = int
+        if not qery:
+            supp = Supplement(name=supp)
+            db.session.add(supp)
+            db.session.flush()
+            suppId = supp.id
+        else:
+            suppId = qery.id
+
+        item = ItemSupplement(
+            name=name,
+            Prix=Prix,
+            img_url=img_url,
+            supplementID=suppId
+        )
+        db.session.add(item)
+        db.session.commit()
+    supplement_data = ItemSupplement.query.all()
+    return render_template('supplement.html', supplement_data=supplement_data)
 
 
 @app.route('/categories', methods=['POST', 'GET'])
