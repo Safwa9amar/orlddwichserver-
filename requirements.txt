@@ -79,7 +79,6 @@ pycparser==2.21
 Pygments==2.13.0
 PyJWT==2.5.0
 pyparsing==3.0.9
-pypiwin32==223
 pyqt-tools==1.0.0
 PyQt5==5.15.7
 PyQt5-Qt5==5.15.2
