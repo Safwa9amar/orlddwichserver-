@@ -1,0 +1,10 @@
+werkzeug
+flask_marshmallow
+marshmallow_sqlalchemy
+Flask
+flask_cors
+cors
+flask_login
+flask_socketio
+flask_jwt_extended
+sqlalchemy
