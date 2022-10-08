@@ -26,9 +26,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'acuUl88CzudhD4ierZDZZeyp5eRmiuz8'
 # Change this!
 app.config["JWT_SECRET_KEY"] = "mU0acnVXyjYMXkOlcFhJohofJOf7iTXy"
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(
+    app, cors_allowed_origins="https://worldsdwich42.netlify.app/")
 
-cors = CORS(app, resources={r"/api": {"origins": "http://localhost:3000"}})
+cors = CORS(app, resources={
+            r"/api": {"origins": "https://worldsdwich42.netlify.app/"}})
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
