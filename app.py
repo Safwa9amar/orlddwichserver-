@@ -29,7 +29,7 @@ app.config["JWT_SECRET_KEY"] = "mU0acnVXyjYMXkOlcFhJohofJOf7iTXy"
 socketio = SocketIO(
     app, cors_allowed_origins="*")
 
-cors = CORS(app, resources={r"/api": {"*": "*"}})
+cors = CORS(app, resources={r"/": {"*": "*"}})
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
