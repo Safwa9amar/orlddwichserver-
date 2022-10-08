@@ -153,7 +153,7 @@
             <a href="/category/{{el.id}}"
               ><img
                 class="w-[20px]"
-                src="{{el.icon_url}}"
+                src="{{url_for('static', filename='icons/'+el.icon_url)}}"
                 alt="{{el.name}}"
               />{{el.name}}</a
             >
@@ -179,7 +179,10 @@
   <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
   <script defer src="{{url_for('static',filename='js/index.js' )}}"></script>
   <script defer src="{{url_for('static', filename='js/socket.js')}}"></script>
-
+  <script
+    defer
+    src="{{url_for('static', filename='js/multipleInput.js')}}"
+  ></script>
   <script>
     $(document).ready(function () {
       $("#orders-table").DataTable({

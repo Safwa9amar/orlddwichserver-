@@ -1,4 +1,6 @@
+from argparse import Namespace
 import ast
+from fileinput import filename
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy.fields import Nested
@@ -121,13 +123,20 @@ class Supplement(db.Model):
 class ItemSupplement(db.Model):
     __tablename__ = 'item_supplement'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable=False)
-    Prix = db.Column(db.String(200), nullable=False)
+    name = db.Column(db.String, nullable=False)
+    Prix = db.Column(db.Float, nullable=False)
     isAvailable = db.Column(db.Boolean, unique=False, default=True)
-    img_url = db.Column(db.String(200), nullable=False)
+    img_url = db.Column(db.String, nullable=False)
     # Supplement id
     supplementID = db.Column(db.Integer, ForeignKey("Supplement.id"))
     supplement = db.relationship('Supplement', backref='item_supplement')
+    #
+    categoryIDs = db.Column(db.String, nullable=False)
+    # categoryID = db.Column(db.Integer, ForeignKey("categories.id"))
+    # category = db.relationship('Categories', backref='item_supplement')
+
+    # categoryIDs = db.relationship("Categories", foreign_keys=[
+    #   categoryID], overlaps="category,item_supplement")
 
     def __repr__(self) -> str:
         return '<Categories %r>' % self.id
@@ -182,6 +191,22 @@ class RecipeSchema(ma.SQLAlchemyAutoSchema):
         model = Recipe
         load_instance = True
         include_fk = True
+
+
+class SupplementSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Supplement
+        load_instance = True
+        include_fk = True
+        include_relationships = True
+
+
+class ItemSupplementSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = ItemSupplement
+        load_instance = True
+        # include_fk = True
+        # Supplement = Nested(SupplementSchema, many=True)
 
 
 class FoodSchema(ma.SQLAlchemyAutoSchema):
@@ -383,13 +408,19 @@ def api():
     for output in outputs:
         _id = output['id']
         _name = output['name']
-        img = output['img_url']
-        icon = output['icon_url']
+        img = url_for(
+            'static', filename=f"images/{output['img_url']}", _external=True)
+        icon = url_for(
+            'static', filename=f"icons/{output['icon_url']}", _external=True)
         list = []
 
         for food_id in output['food_category']:
             for out in output2:
                 if food_id == out['id']:
+                    out['img_url'] = url_for(
+                        'static', filename=f"images/{out['img_url']}", _external=True)
+                    print(out['img_url'])
+
                     list.append(out)
                     lits2 = []
                     for recip in recipes:
@@ -479,13 +510,65 @@ def clients():
     return render_template('clients.html', clients_data=clients_data, Order=Order)
 
 
+@socketio.on('delete_supp')
+def delete_supp(id):
+    item_to_delete = ItemSupplement.query.get_or_404(int(id))
+    try:
+        db.session.delete(item_to_delete)
+        db.session.commit()
+        redirect('/supplement')
+    except:
+        print('some error')
+    return ""
+
+
+@app.route('/update_supp/<int:id>', methods=['GET', 'POST'])
+@login_required
+def update_supp(id):
+    item_to_update = ItemSupplement.query.get_or_404(id)
+    if request.method == 'POST':
+        updated_uploaded_image = request.files['image']
+
+        if updated_uploaded_image.filename != '':
+            img_filename = updated_uploaded_image.filename
+
+            updated_img_file_path = os.path.join(
+                app.config['IMAGES_FOLDER'], f'supp_{secure_filename(updated_uploaded_image.filename)}')
+            # set the file path
+
+            updated_uploaded_image.save(updated_img_file_path)
+            # save the file
+        else:
+            img_filename = item_to_update.img_url
+
+        item_to_update.name = request.form['name']
+        item_to_update.categoryIDs = request.form['category']
+        item_to_update.supplementID = request.form['id_supp']
+        item_to_update.img_url = img_filename
+
+        db.session.commit()
+        try:
+            return redirect('/supplement')
+        except:
+            print('some erroe in updating')
+    else:
+        supplement = Supplement.query.all()
+        return render_template('update_supp.html', el=item_to_update, supplement=supplement, Categories=Categories)
+
+
 @app.route('/supplement', methods=['POST', 'GET'])
 @login_required
 def supplement():
     if request.method == "POST":
-        supp = request.form['supp'].lower()
+        try:
+            supp = request.form['supp'].lower().split('_')[1]
+        except:
+            supp = request.form['supp'].lower()
+
         name = request.form['nom']
         Prix = request.form['price']
+        categoryIDs = request.form['category']
+
         uploaded_image = request.files['photo']
         if uploaded_image.filename != '':
             img_filename = f"supp_{secure_filename(uploaded_image.filename)}"
@@ -494,8 +577,7 @@ def supplement():
             # set the file path
             uploaded_image.save(img_file_path)
 
-        img_url = url_for(
-            'static', filename=f'images/{img_filename}', _external=True)
+        # img_url = url_for('static', filename=f'images/{img_filename}', _external=True)
         qery = Supplement.query.filter_by(name=supp).first()
         suppId = int
         if not qery:
@@ -509,13 +591,49 @@ def supplement():
         item = ItemSupplement(
             name=name,
             Prix=Prix,
-            img_url=img_url,
-            supplementID=suppId
+            img_url=img_filename,
+            supplementID=suppId,
+            categoryIDs=categoryIDs,
         )
         db.session.add(item)
         db.session.commit()
-    supplement_data = ItemSupplement.query.all()
-    return render_template('supplement.html', supplement_data=supplement_data)
+
+    supplement = Supplement.query.all()
+    items_supplement_data = ItemSupplement.query.all()
+
+    selected_supp = request.args.get('supp')
+    try:
+        # if selected_supp:
+        items_supplement_data = ItemSupplement.query.filter_by(
+            supplementID=int(selected_supp))
+        return render_template('supplement.html', supplement=supplement, items_supplement_data=items_supplement_data, Categories=Categories)
+    except:
+        # return render_template('supplement.html', supplement=supplement, items_supplement_data=items_supplement_data)
+
+        return render_template('supplement.html', supplement=supplement, items_supplement_data=items_supplement_data, Categories=Categories)
+
+
+@socketio.on('getSuppdata')
+def getSuppdata(data):
+    if data['id'] != -1:
+        item = ItemSupplement.query.get_or_404(int(data['id']))
+        print(ItemSupplementSchema().dump(item))
+        item.isAvailable = data['status']
+        db.session.commit()
+
+    suppData = Supplement.query.all()
+    itemSuppData = ItemSupplement.query.all()
+
+    suppData = SupplementSchema(many=True).dump(suppData)
+    itemSuppData = ItemSupplementSchema(many=True).dump(itemSuppData)
+
+    for el in itemSuppData:
+        el['img_url'] = url_for(
+            'static', filename=f'images/{el["img_url"]}', _external=True)
+
+    finalData = {'suppData': suppData, 'itemSuppData': itemSuppData}
+
+    emit('getSuppdata', finalData, broadcast=True)
 
 
 @app.route('/categories', methods=['POST', 'GET'])
@@ -546,10 +664,10 @@ def showCatgeories():
 
             db.session.add(Categories(
                 name=request.form['name'],
-                img_url=url_for(
-                    'static', filename=f'images/{img_filename}', _external=True),
-                icon_url=url_for(
-                    'static', filename=f'icons/{icon_filename}', _external=True)
+                # url_for('static', filename=f'images/{img_filename}', _external=True),
+                img_url=img_filename,
+                # url_for('static', filename=f'icons/{icon_filename}', _external=True)
+                icon_url=icon_filename
             ))
             db.session.commit()
             return redirect('/categories')
@@ -582,8 +700,8 @@ def Category(id):
             food = Food(
                 name=food_name,
                 prix=food_price,
-                img_url=url_for(
-                    'static', filename=f'images/{food_img_filename}', _external=True),
+                # url_for('static', filename=f'images/{food_img_filename}', _external=True),
+                img_url=food_img_filename,
                 rating=3,
                 categoryID=item_category.id,
                 Categorie=item_category.name,
@@ -652,11 +770,11 @@ def Update(id):
         updated_uploaded_icon = request.files['icon']
 
         if updated_uploaded_image.filename != '':
-            img_filename = url_for(
-                'static', filename=f'images/category_{secure_filename(updated_uploaded_image.filename)}', _external=True)
+            # url_for('static', filename=f'images/category_{secure_filename(updated_uploaded_image.filename)}', _external=True)
+            img_filename = f'category_{secure_filename(updated_uploaded_image.filename)}'
 
             updated_img_file_path = os.path.join(
-                app.config['IMAGES_FOLDER'], f'category_{secure_filename(updated_uploaded_image.filename)}')
+                app.config['IMAGES_FOLDER'], img_filename)
             # set the file path
 
             updated_uploaded_image.save(updated_img_file_path)
@@ -665,11 +783,11 @@ def Update(id):
             img_filename = item_to_update.img_url
 
         if updated_uploaded_icon.filename != '':
-            icon_filename = url_for(
-                'static', filename=f'icons/category_{secure_filename(updated_uploaded_icon.filename)}', _external=True)
+            # url_for('static', filename=f'icons/category_{secure_filename(updated_uploaded_icon.filename)}', _external=True)
+            icon_filename = f'category_{secure_filename(updated_uploaded_icon.filename)}'
 
             updated_icon_file_path = os.path.join(
-                app.config['ICONS_FOLDER'], f'category_{secure_filename(updated_uploaded_icon.filename)}')
+                app.config['ICONS_FOLDER'], icon_filename)
             # set the file path
 
             updated_uploaded_icon.save(updated_icon_file_path)

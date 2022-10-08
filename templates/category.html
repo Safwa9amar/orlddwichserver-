@@ -29,7 +29,10 @@
         <td>
           <div class="flex items-center space-x-3">
             <div class="w-12 h-12">
-              <img src="{{el.img_url}}" alt="{{el.name}}" />
+              <img
+                src="{{url_for('static', filename='images/'+el.img_url)}}"
+                alt="{{el.name}}"
+              />
             </div>
             <div class="font-bold">{{el.name}}</div>
           </div>
@@ -48,7 +51,7 @@
           </a>
           <a
             href="#my-modal-2"
-            delete-data={{el.id}}
+            delete-data="{{el.id}}"
             delete_url="/delete_article/{{el.id}}"
             class="btn btn-xs btn-outline btn-error"
           >

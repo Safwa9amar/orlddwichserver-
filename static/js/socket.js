@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let notification_area = document.getElementById("notification_area");
   } catch (error) {}
 
-  socket.emit("message", { data: "server side connected" });
+  socket.emit("message", { test: "server side connected" });
 
   socket.on("message", function (data) {
     try {

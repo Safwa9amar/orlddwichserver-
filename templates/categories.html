@@ -31,7 +31,10 @@
           <td>
             <div class="flex items-center space-x-3">
               <div class="w-12 h-12">
-                <img src="{{el.img_url}}" alt="{{el.name}}" />
+                <img
+                  src="{{url_for('static', filename='images/'+el.img_url)}}"
+                  alt="{{el.name}}"
+                />
               </div>
               <div class="font-bold">{{el.name}}</div>
             </div>
@@ -40,14 +43,14 @@
             <div class="w-12 h-12">
               <img
                 class="w-[50px] h-[50px]"
-                src="{{el.icon_url}}"
+                src="{{url_for('static', filename='icons/'+el.icon_url)}}"
                 alt="{{el.name}}"
               />
             </div>
           </td>
           <th>
             <a
-              href="/update_category/{{el.id}}"
+              href="{{url_for('Update', id=el.id)}}"
               class="btn btn-xs btn-outline btn-success"
             >
               <i class="fa-solid fa-pen-to-square mx-2"></i>Éditer
@@ -56,7 +59,7 @@
               id="delCategory"
               delete-data="{{el.id}}"
               href="#my-modal-2"
-              delete_url='/delete/{{el.id}}'
+              delete_url="/delete/{{el.id}}"
               class="btn btn-xs btn-outline btn-error"
             >
               <i class="fa-solid fa-trash mx-2"></i>Retirer
@@ -67,7 +70,7 @@
       </tbody>
     </table>
   </div>
-  
+
   <input type="checkbox" id="my-modal-3" class="modal-toggle" />
   <div class="modal">
     <div class="modal-box relative">
@@ -120,7 +123,7 @@
               />
             </label>
           </div>
-          
+
           <button class="btn btn-success self-end">Ajouter</button>
         </fieldset>
       </form>

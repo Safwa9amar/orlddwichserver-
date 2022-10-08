@@ -1,0 +1,136 @@
+{% extends 'base.html'%} {%block head%}
+
+<title>Editer une catégorie</title>
+
+{%endblock%} {%block body%}
+<form
+  class="md:w-1/3"
+  id="category"
+  action="/update_supp/{{el.id}}"
+  method="POST"
+  enctype="multipart/form-data"
+>
+  <fieldset class="flex flex-col gap-4">
+    <legend>Editer une supplément</legend>
+    <div class="flex gap-4 justify-between">
+      <div class="form-control">
+        <label class="input-group input-group-vertical">
+          <span>Supplément</span>
+          <input
+            type="text"
+            placeholder="{{el.supplement.name}}"
+            class="input input-bordered"
+            id="name"
+            value="{{el.supplement.id}}"
+            name="id_supp"
+            list="datalist"
+          />
+          <datalist id="datalist">
+            <option disabled selected value="{{el.supplementID}}">
+              {{el.supplement.name}}
+            </option>
+            {%for supp in supplement%}
+            <option value="{{supp.id}}">{{supp.name}}</option>
+            {%endfor%}
+          </datalist>
+        </label>
+      </div>
+      <div class="form-control">
+        <label class="input-group input-group-vertical">
+          <span>Menu</span>
+          <input
+            required
+            id="multipleSelection"
+            name="category"
+            list="categoriesList"
+            type="text"
+            placeholder="Choisir"
+            value="{{el.categoryIDs}}"
+            class="input input-bordered"
+          />
+        </label>
+        <datalist id="categoriesList" name="supp">
+          {%for category in Categories.query.all()%}
+          <option value="{{category.id}}_{{category.name}}">
+            {{category.name}}
+          </option>
+          {%endfor%}
+        </datalist>
+      </div>
+    </div>
+    <div class="flex gap-4" id="added_categories"></div>
+
+    <div class="form-control">
+      <label class="input-group input-group-vertical">
+        <span><i class="fa-solid fa-sitemap mx-2"></i>Nom</span>
+        <input
+          type="text"
+          placeholder="ex : burger"
+          class="input input-bordered"
+          id="name"
+          name="name"
+          value="{{el.name}}"
+        />
+      </label>
+    </div>
+    <div class="form-control">
+      <label class="input-group input-group-vertical">
+        <span>Prix(€)</span>
+        <input
+          required
+          name="price"
+          type="number"
+          value="{{el.Prix}}"
+          placeholder="..."
+          class="input input-bordered"
+        />
+      </label>
+    </div>
+    <div class="form-control">
+      <label class="input-group flex-col h-fit w-full">
+        <span><i class="fa-solid fa-image mx-2"></i> Image</span>
+
+        <div class="flex justify-center items-center w-full">
+          <label
+            for="update_category_img"
+            class="flex flex-col justify-center items-center w-full h-64 bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+          >
+            <div
+              class="flex flex-col justify-center items-center p-2 text-center"
+            >
+              <div class="w-24 my-2">
+                <img
+                  id="categoryuploadImg"
+                  class="w-full h-full m-"
+                  src="{{el.img_url}}"
+                />
+              </div>
+              <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                <span class="font-semibold">Cliquez pour télécharger</span> ou
+                glisser-déposer
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                PNG, JPG or GIF
+              </p>
+            </div>
+            <input
+              accept=".png , .jpg , .jpeg , .gif"
+              name="image"
+              id="update_category_img"
+              type="file"
+              class="hidden"
+            />
+          </label>
+        </div>
+      </label>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="btn btn-success self-end" id="submitAddingSupp">
+      Mettre à jour
+    </button>
+  </fieldset>
+</form>
+
+{%endblock%}

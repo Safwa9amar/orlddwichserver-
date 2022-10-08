@@ -1,7 +1,7 @@
 window.addEventListener("DOMContentLoaded", () => {
-  console.log("document loaded");
   let delBtn = document.querySelectorAll("[delete-data]");
   let del_id_tagret = document.getElementById("del_id_tagret");
+  const socket = io(`http://${document.domain}:${location.port}/`);
 
   delBtn.forEach((el) => {
     el.addEventListener("click", (e) => {
@@ -11,6 +11,10 @@ window.addEventListener("DOMContentLoaded", () => {
           <a class='btn' id='${id}' href='${url}''> Oui </a>
         `;
       del_id_tagret.innerHTML = html;
+      try {
+        let message = el.getAttribute("message");
+        socket.emit(message, id);
+      } catch (error) {}
     });
   });
 
@@ -51,72 +55,64 @@ window.addEventListener("DOMContentLoaded", () => {
 
   let theme_toggle = document.getElementById("theme-toggle");
   let data_theme = document.querySelector("[data-theme]");
-  localStorage.getItem("theme") == null && localStorage.setItem("theme", "dracula");
+  localStorage.getItem("theme") == null &&
+    localStorage.setItem("theme", "dracula");
 
   data_theme.setAttribute("data-theme", localStorage.getItem("theme"));
 
-
   let moon = document.getElementById("moon");
-  let sun = document.getElementById("sun");  
+  let sun = document.getElementById("sun");
   let theme = localStorage.getItem("theme");
-  
+
   if (theme === "lofi") {
     moon.classList.replace("swap-on", "swap-off");
     sun.classList.replace("swap-off", "swap-on");
-     try {
-       document
-         .querySelector(".dataTables_filter")
-         .setAttribute("style", "color:#eee !important");
-       document
-         .querySelector(".dataTables_length")
-         .setAttribute("style", "color:#eee !important");
-     } catch (error) {}
+    try {
+      document
+        .querySelector(".dataTables_filter")
+        .setAttribute("style", "color:#eee !important");
+      document
+        .querySelector(".dataTables_length")
+        .setAttribute("style", "color:#eee !important");
+    } catch (error) {}
   } else {
     moon.classList.replace("swap-off", "swap-on");
     sun.classList.replace("swap-on", "swap-off");
-    
-     try {
-       document
-         .querySelector(".dataTables_length")
-         .setAttribute("style", "color:#000 !important");
-       document
-         .querySelector(".dataTables_filter")
-         .setAttribute("style", "color:#000 !important");
-     } catch (error) {}
+
+    try {
+      document
+        .querySelector(".dataTables_length")
+        .setAttribute("style", "color:#000 !important");
+      document
+        .querySelector(".dataTables_filter")
+        .setAttribute("style", "color:#000 !important");
+    } catch (error) {}
   }
-    theme_toggle.addEventListener("click", () => {
-     
-      if (data_theme.getAttribute("data-theme") === "lofi") {
-        data_theme.setAttribute("data-theme", "dracula");
+  theme_toggle.addEventListener("click", () => {
+    if (data_theme.getAttribute("data-theme") === "lofi") {
+      data_theme.setAttribute("data-theme", "dracula");
 
-        try {
-          document.querySelector(".dataTables_filter").setAttribute("style", "color:#eee !important");
-          document.querySelector(".dataTables_length").setAttribute("style", "color:#eee !important");
+      try {
+        document
+          .querySelector(".dataTables_filter")
+          .setAttribute("style", "color:#eee !important");
+        document
+          .querySelector(".dataTables_length")
+          .setAttribute("style", "color:#eee !important");
+      } catch (error) {}
+      localStorage.setItem("theme", "dracula");
+    } else if (data_theme.getAttribute("data-theme") === "dracula") {
+      try {
+        document
+          .querySelector(".dataTables_length")
+          .setAttribute("style", "color:#000 !important");
+        document
+          .querySelector(".dataTables_filter")
+          .setAttribute("style", "color:#000 !important");
+      } catch (error) {}
 
-        } catch (error) {
-          
-        }
-        localStorage.setItem("theme", "dracula");
-      } else if (data_theme.getAttribute("data-theme") === "dracula") {
-
-        try {
-          document
-            .querySelector(".dataTables_length")
-            .setAttribute("style", "color:#000 !important");
-          document
-            .querySelector(".dataTables_filter")
-            .setAttribute("style", "color:#000 !important");
-        } catch (error) {
-          
-        }
-
-        data_theme.setAttribute("data-theme", "lofi");
-        localStorage.setItem("theme", "lofi");
-      }
-    });
-
-
-
-
-   
+      data_theme.setAttribute("data-theme", "lofi");
+      localStorage.setItem("theme", "lofi");
+    }
+  });
 });

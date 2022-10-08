@@ -42,7 +42,7 @@
                   <img
                     id="categoryuploadImg"
                     class="w-full h-full m-"
-                    src="{{el.img_url}}"
+                    src="{{url_for('static', filename='images/'+ el.img_url)}}"
                   />
                 </div>
                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
@@ -80,7 +80,7 @@
                   <img
                     id="categoryuploadIcon"
                     class="w-full h-full m-"
-                    src="{{el.icon_url}}"
+                    src="{{url_for('static', filename='icons/'+ el.icon_url)}}"
                   />
                 </div>
                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">

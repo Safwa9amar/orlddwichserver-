@@ -4,11 +4,17 @@
   <div class="full">
     <div class="flex justify-between">
       <div class="tabs">
-        <a class="tab tab-bordered tab-active">Fromage</a>
-        <a class="tab tab-bordered">Viande</a>
-        <a class="tab tab-bordered">Crudités</a>
-        <a class="tab tab-bordered">Gratiné</a>
-        <a class="tab tab-bordered">Autre</a>
+        {%for el in supplement%} {%if request.args.get('supp')|int == el.id%}
+        <a
+          class="tab tab-bordered tab-active"
+          href="{{url_for('supplement', supp=el.id)}}"
+          >{{el.name.capitalize()}}</a
+        >
+        {%else%}
+        <a class="tab tab-bordered" href="{{url_for('supplement', supp=el.id)}}"
+          >{{el.name.capitalize()}}</a
+        >
+        {%endif%} {%endfor%}
       </div>
       <div class="">
         <label for="suppModel" class="btn btn-sm btn-success">Ajouter</label>
@@ -30,31 +36,55 @@
         action="{{url_for('supplement')}}"
         class="flex flex-col gap-4"
       >
-        <div class="flex gap-2 justify-between items-center hidden">
+        <div class="gap-2 justify-between items-center hidden">
           <label class="btn btn-xs btn-success"
             ><i class="fa-solid fa-plus"></i
           ></label>
         </div>
-
-        <div class="form-control">
-          <label class="input-group input-group-vertical">
-            <span>Supplément</span>
-            <input
-              name="supp"
-              list="suppList"
-              type="text"
-              placeholder="Choisir"
-              class="input input-bordered"
-            />
-          </label>
-          <datalist id="suppList" name="supp">
-            <option value="Fromage">Fromage</option>
-            <option value="Viande">Viande</option>
-            <option value="Crudités">Crudités</option>
-            <option value="Gratiné">Gratiné</option>
-            <option value="Autre">Autre</option>
-          </datalist>
+        <div class="flex gap-2 justify-between">
+          <div class="form-control">
+            <label class="input-group input-group-vertical">
+              <span>Menu</span>
+              <input
+                id="multipleSelection"
+                name="category"
+                list="categoriesList"
+                type="text"
+                placeholder="Choisir"
+                class="input input-bordered"
+                autocomplete="off"
+                required
+              />
+            </label>
+            <datalist id="categoriesList" name="supp">
+              {%for category in Categories.query.all()%}
+              <option value="{{category.id}}_{{category.name}}">
+                {{category.name}}
+              </option>
+              {%endfor%}
+            </datalist>
+          </div>
+          <div class="form-control">
+            <label class="input-group input-group-vertical">
+              <span>Supplément</span>
+              <input
+                name="supp"
+                list="suppList"
+                type="text"
+                placeholder="Choisissez ou écrivez"
+                class="input input-bordered"
+                required
+                autocomplete="off"
+              />
+            </label>
+            <datalist id="suppList">
+              {%for supp in supplement%}
+              <option value="{{supp.id}}_{{supp.name}}">{{supp.name}}</option>
+              {%endfor%}
+            </datalist>
+          </div>
         </div>
+        <div class="flex gap-4" id="added_categories"></div>
         <div class="form-control">
           <label class="input-group input-group-vertical">
             <span>Nom</span>
@@ -63,6 +93,8 @@
               type="text"
               placeholder="..."
               class="input input-bordered"
+              required
+              autocomplete="off"
             />
           </label>
         </div>
@@ -70,6 +102,8 @@
           <label class="input-group input-group-vertical">
             <span>Prix(€)</span>
             <input
+              autocomplete="off"
+              required
               name="price"
               type="number"
               placeholder="..."
@@ -83,7 +117,7 @@
             <div class="flex justify-center items-center w-full">
               <label
                 for="photo"
-                class="flex flex-col justify-center items-center w-full h-64 bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+                class="flex flex-col justify-center items-center w-full h-fit bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
               >
                 <div
                   class="flex flex-col justify-center items-center p-2 text-center"
@@ -97,10 +131,6 @@
                   </div>
                   <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
                     <span class="font-semibold">Cliquez pour télécharger</span>
-                    ou glisser-déposer
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    PNG, JPG or GIF
                   </p>
                 </div>
                 <input
@@ -108,13 +138,18 @@
                   name="photo"
                   id="photo"
                   type="file"
-                  class="hidden"
+                  required
                 />
               </label>
             </div>
           </label>
         </div>
-        <button class="btn btn-sm btn-outline btn-success">Ajouter</button>
+        <button
+          id="submitAddingSupp"
+          class="btn btn-sm btn-outline btn-success"
+        >
+          Ajouter
+        </button>
       </form>
     </div>
   </div>
@@ -127,33 +162,63 @@
       <tr>
         <th>id</th>
         <th>Aperçu</th>
+        <th>Menu</th>
         <th>Prix</th>
         <th>Etat</th>
         <th>Options</th>
       </tr>
     </thead>
     <tbody>
-      {%for el in supplement_data%}
+      {%for el in items_supplement_data%}
       <tr>
         <td>#{{el.id}}</td>
         <td>
           <div class="flex items-center space-x-3">
             <div class="avatar">
               <div class="mask mask-squircle w-12 h-12">
-                <img src="{{el.img_url}}" alt="Avatar Tailwind CSS Component" />
+                <img
+                  src="{{url_for('static', filename='images/' + el.img_url)}}"
+                  alt="Avatar Tailwind CSS Component"
+                />
               </div>
             </div>
             <div>
               <div class="font-bold">{{el.name}}</div>
-              <div class="text-sm opacity-50">{{el.supplement.name}}</div>
+              {{el.supplement.name}}
             </div>
           </div>
         </td>
+        <td>
+          <div class="text-sm opacity-50">
+            {%for s in el.categoryIDs%} {%if s.isdigit()%}
+            <span class="badge badge-info"
+              >{{Categories.query.filter_by(id = s|int).first().name}}</span
+            >
+            {%endif%} {%endfor%}
+          </div>
+        </td>
         <td>€{{el.Prix}}</td>
-        <td>{{el.isAvailable}}</td>
+        <td>
+          <label
+            for="{{el.id}}"
+            class="inline-flex relative items-center cursor-pointer"
+          >
+            <input
+              type="checkbox"
+              value=""
+              id="{{el.id}}"
+              class="sr-only peer"
+              checked=""
+              set-suppstatus="{{el.isAvailable}}"
+            />
+            <div
+              class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"
+            ></div>
+          </label>
+        </td>
         <th>
           <a
-            href="/update_category/{{el.id}}"
+            href="{{url_for('update_supp', id=el.id)}}"
             class="btn btn-xs btn-outline btn-success"
           >
             <i class="fa-solid fa-pen-to-square mx-2"></i>Éditer
@@ -161,8 +226,9 @@
           <a
             id="delCategory"
             delete-data="{{el.id}}"
+            message="delete_supp"
             href="#my-modal-2"
-            delete_url="/delete/{{el.id}}"
+            delete_url="{{url_for('supplement')}}"
             class="btn btn-xs btn-outline btn-error"
           >
             <i class="fa-solid fa-trash mx-2"></i>Retirer
@@ -173,5 +239,22 @@
     </tbody>
   </table>
 </div>
+<script>
+  let setSuppStatus = document.querySelectorAll("[set-suppstatus]");
+  const socket = io(`http://${document.domain}:${location.port}/`);
 
+  setSuppStatus.forEach((el) => {
+    let status = el.getAttribute("set-suppstatus");
+    let id = el.id;
+    if (status === "True") {
+      el.setAttribute("checked", true);
+    } else if (status === "False") {
+      el.removeAttribute("checked");
+    }
+
+    el.addEventListener("change", () => {
+      socket.emit("getSuppdata", { id: id, status: el.checked });
+    });
+  });
+</script>
 {%endblock%}
