@@ -26,8 +26,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'acuUl88CzudhD4ierZDZZeyp5eRmiuz8'
 # Change this!
 app.config["JWT_SECRET_KEY"] = "mU0acnVXyjYMXkOlcFhJohofJOf7iTXy"
-socketio = SocketIO(
-    app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
