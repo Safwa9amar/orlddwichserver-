@@ -241,8 +241,8 @@
 </div>
 <script>
   let setSuppStatus = document.querySelectorAll("[set-suppstatus]");
-  const socket = io(`https://${document.domain}:${location.port}/`);
-  print(socket);
+  const socket = io(`https://myworlddwich.herokuapp.com/`);
+  console.log(socket);
   setSuppStatus.forEach((el) => {
     try {
       let status = el.getAttribute("set-suppstatus");
