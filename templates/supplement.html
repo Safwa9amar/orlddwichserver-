@@ -242,19 +242,23 @@
 <script>
   let setSuppStatus = document.querySelectorAll("[set-suppstatus]");
   const socket = io(`https://${document.domain}:${location.port}/`);
-
+  print(socket);
   setSuppStatus.forEach((el) => {
-    let status = el.getAttribute("set-suppstatus");
-    let id = el.id;
-    if (status === "True") {
-      el.setAttribute("checked", true);
-    } else if (status === "False") {
-      el.removeAttribute("checked");
-    }
+    try {
+      let status = el.getAttribute("set-suppstatus");
+      let id = el.id;
+      if (status === "True") {
+        el.setAttribute("checked", true);
+      } else if (status === "False") {
+        el.removeAttribute("checked");
+      }
 
-    el.addEventListener("change", () => {
-      socket.emit("getSuppdata", { id: id, status: el.checked });
-    });
+      el.addEventListener("change", () => {
+        socket.emit("getSuppdata", { id: id, status: el.checked });
+      });
+    } catch (err) {
+      console.log("soceket : ", err);
+    }
   });
 </script>
 {%endblock%}
