@@ -1,5 +1,5 @@
 let setSuppStatus = document.querySelectorAll("[set-suppstatus]");
-const socket = io(`http://${document.domain}:${location.port}/`);
+const socket = io(`https://${document.domain}:${location.port}/`);
 setSuppStatus.forEach((el) => {
   try {
     let status = el.getAttribute("set-suppstatus");
