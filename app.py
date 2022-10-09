@@ -613,27 +613,27 @@ def supplement():
         return render_template('supplement.html', supplement=supplement, items_supplement_data=items_supplement_data, Categories=Categories)
 
 
-@socketio.on('getSuppdata')
-def getSuppdata(data):
-    if data['id'] != -1:
-        item = ItemSupplement.query.get_or_404(int(data['id']))
-        print(ItemSupplementSchema().dump(item))
-        item.isAvailable = data['status']
-        db.session.commit()
+# @socketio.on('getSuppdata')
+# def getSuppdata(data):
+#     if data['id'] != -1:
+#         item = ItemSupplement.query.get_or_404(int(data['id']))
+#         print(ItemSupplementSchema().dump(item))
+#         item.isAvailable = data['status']
+#         db.session.commit()
 
-    suppData = Supplement.query.all()
-    itemSuppData = ItemSupplement.query.all()
+#     suppData = Supplement.query.all()
+#     itemSuppData = ItemSupplement.query.all()
 
-    suppData = SupplementSchema(many=True).dump(suppData)
-    itemSuppData = ItemSupplementSchema(many=True).dump(itemSuppData)
+#     suppData = SupplementSchema(many=True).dump(suppData)
+#     itemSuppData = ItemSupplementSchema(many=True).dump(itemSuppData)
 
-    for el in itemSuppData:
-        el['img_url'] = url_for(
-            'static', filename=f'images/{el["img_url"]}', _external=True)
+#     for el in itemSuppData:
+#         el['img_url'] = url_for(
+#             'static', filename=f'images/{el["img_url"]}', _external=True)
 
-    finalData = {'suppData': suppData, 'itemSuppData': itemSuppData}
+#     finalData = {'suppData': suppData, 'itemSuppData': itemSuppData}
 
-    emit('getSuppdata', finalData, broadcast=True)
+#     emit('getSuppdata', finalData, broadcast=True)
 
 
 @app.route('/categories', methods=['POST', 'GET'])
