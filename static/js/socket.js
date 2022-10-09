@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const socket = io(`http://${document.domain}:${location.port}/`);
+  const socket = io(`https://${document.domain}:${location.port}/`);
 
   try {
     let notification_indicator = document.getElementById(
