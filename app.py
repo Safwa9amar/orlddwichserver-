@@ -862,6 +862,11 @@ def UpdateArticle(id):
         return render_template('update_article.html', el=item_to_update, Recipes=item_to_update.recipes)
 
 
+@socketio.on('message')
+def test(data):
+    print(data)
+
+
 @app.errorhandler(404)
 @login_required
 def not_found(e):

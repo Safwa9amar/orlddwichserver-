@@ -1,7 +1,7 @@
 window.addEventListener("DOMContentLoaded", () => {
   let delBtn = document.querySelectorAll("[delete-data]");
   let del_id_tagret = document.getElementById("del_id_tagret");
-  const socket = io(`https://${document.domain}:${location.port}/`);
+  const socket = io(`http://${document.domain}:${location.port}/`);
 
   delBtn.forEach((el) => {
     el.addEventListener("click", (e) => {

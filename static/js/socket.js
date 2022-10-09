@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const socket = io(`https://${document.domain}:${location.port}/`);
+  const socket = io(`http://${document.domain}:${location.port}/`);
 
   try {
     let notification_indicator = document.getElementById(
@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let notification_area = document.getElementById("notification_area");
   } catch (error) {}
 
-  socket.emit("message", { test: "server side connected" });
+  socket.emit("message", { test: "server side connected from socket file" });
 
   socket.on("message", function (data) {
     try {
