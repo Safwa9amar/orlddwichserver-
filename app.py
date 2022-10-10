@@ -238,6 +238,7 @@ def get_client_order():
     if request.method == "POST":
         data = request.get_json()
 
+        print(data['user'])
         # send(data, broadcast=True)
         client_token = decode_token(data['user'])['sub']
         client = Customer.query.filter_by(username=str(client_token)).first()
