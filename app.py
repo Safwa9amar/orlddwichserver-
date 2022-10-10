@@ -22,7 +22,7 @@ from flask_socketio import SocketIO, send, emit
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, JWTManager, decode_token
 
 
-from docx import Document
+# from docx import Document
 
 
 app = Flask(__name__)
