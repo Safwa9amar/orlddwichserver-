@@ -1,6 +1,4 @@
-from argparse import Namespace
 import ast
-from fileinput import filename
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy.fields import Nested
@@ -836,8 +834,7 @@ def UpdateArticle(id):
             article_uploaded_image = request.files['photo']
 
             if article_uploaded_image.filename != '':
-                filename = url_for(
-                    'static', filename=f'images/food_{secure_filename(article_uploaded_image.filename)}', _external=True)
+                filename = f'food_{secure_filename(article_uploaded_image.filename)}'
 
                 article_img_file_path = os.path.join(
                     app.config['IMAGES_FOLDER'], article_uploaded_image.filename)
