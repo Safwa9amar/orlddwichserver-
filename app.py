@@ -178,7 +178,7 @@ class Recipe(db.Model):
     # food data
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
-    isCheked = db.Column(db.Boolean)
+    isCheked = db.Column(db.Boolean, default=True)
     # category id
     FoodID = db.Column(db.Integer, ForeignKey("food_category.id"))
     food = db.relationship('Food', backref='_recipes')
@@ -430,13 +430,14 @@ def api():
                 if food_id == out['id']:
                     out['img_url'] = url_for(
                         'static', filename=f"images/{out['img_url']}", _external=True)
-                    print(out['img_url'])
+                    # print(out['img_url'])
 
                     list.append(out)
                     lits2 = []
                     for recip in recipes:
                         for r_id in out['_recipes']:
                             if recip['id'] == int(r_id):
+                                print(recip)
                                 id = recip['id']
                                 name = recip['name']
                                 isCheked = recip['isCheked']
@@ -450,7 +451,7 @@ def api():
         category = {'id': _id, 'name':  str(_name),
                     'img': str(img), 'icon': str(icon), 'list': list}
         newOutputs.append(category)
-    # print(newOutputs)
+    # print(recipes)
 
     return jsonify(newOutputs)
 
@@ -863,14 +864,33 @@ def UpdateArticle(id):
             recipe_db__data = Recipe.query.all()
 
             old_recipes = []
-            new_recipes = food_recips.split(',')
+            new_recipes = food_recips.strip().split(',')
             for item in recipe_db__data:
                 if item.FoodID == id:
                     old_recipes.append(item)
-
+            edited = []
             for new_recipe, old_recipe in zip(new_recipes, old_recipes):
                 dited_recip = Recipe.query.get_or_404(old_recipe.id)
-                dited_recip.name = new_recipe
+                dited_recip.name = new_recipe.strip()
+                edited.append(old_recipe.id)
+
+            # print(edited)
+            # print(new_recipes)
+            # print(old_recipes)
+            # print(id)
+
+            if len(new_recipes) > len(old_recipes):
+                new_arr = new_recipes[len(edited):]
+                # print("items to add:", new_arr)
+                for ell in new_arr:
+                    r = Recipe(name=ell.strip(), FoodID=id)
+                    db.session.add(r)
+
+            if len(new_recipes) < len(old_recipes):
+                new_arr = old_recipes[len(edited):]
+                # print("items to remove:", new_arr)
+                for item_to_delete in new_arr:
+                    db.session.delete(item_to_delete)
 
             try:
                 db.session.commit()
@@ -879,7 +899,6 @@ def UpdateArticle(id):
                 print('some erroe in updating')
 
     else:
-
         return render_template('update_article.html', el=item_to_update, Recipes=item_to_update.recipes)
 
 
