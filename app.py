@@ -521,7 +521,17 @@ def clients():
     return render_template('clients.html', clients_data=clients_data, Order=Order)
 
 
-@socketio.on('delete_supp')
+@app.route('/edit_sup_status', methods=['POST'])
+def edit_sup_status():
+    data = request.get_json()
+    item = ItemSupplement.query.get_or_404(int(data['id']))
+    print(ItemSupplementSchema().dump(item))
+    item.isAvailable = data['status']
+    db.session.commit()
+    return ""
+
+
+@app.route('/delete_supp/<int:id>', methods=['POST'])
 def delete_supp(id):
     item_to_delete = ItemSupplement.query.get_or_404(int(id))
     try:

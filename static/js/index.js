@@ -1,7 +1,7 @@
 window.addEventListener("DOMContentLoaded", () => {
   let delBtn = document.querySelectorAll("[delete-data]");
   let del_id_tagret = document.getElementById("del_id_tagret");
-  const socket = io(`https://${document.domain}:${location.port}/`);
+  // const socket = io(`https://${document.domain}:${location.port}/`);
 
   delBtn.forEach((el) => {
     el.addEventListener("click", (e) => {
@@ -13,7 +13,16 @@ window.addEventListener("DOMContentLoaded", () => {
       del_id_tagret.innerHTML = html;
       try {
         let message = el.getAttribute("message");
-        socket.emit(message, id);
+        // socket.emit(message, id);
+        console.log(el);
+        fetch(`http://${document.domain}:${location.port}/delete_supp/${id}`, {
+          mode: "cors", // no-cors, *cors, same-origin
+          method: "POST",
+          // headers: {
+          //   "Content-Type": "application/json",
+          // },
+          // body: id,
+        });
       } catch (error) {}
     });
   });
