@@ -22,6 +22,9 @@ from flask_socketio import SocketIO, send, emit
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, JWTManager, decode_token
 
 
+from docx import Document
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'acuUl88CzudhD4ierZDZZeyp5eRmiuz8'
 # Change this!
@@ -230,39 +233,48 @@ def load_user(user_id):
     return User.query.get(user_id)
 
 
-@socketio.on('order')
-def handle_message(data):
-    send(data, broadcast=True)
-    client_token = decode_token(data['user'])['sub']
-    client = Customer.query.filter_by(username=str(client_token)).first()
-    order = data['order']
-    DamandeType = data['DamandeType']
-    print(client.id)
-    order_data = []
-    for el in order:
-        category_id = el['category']
-        food_id = el['id']
-        amount = el['amount']
-        isMenu = el['isMenu']
-        unSelectedRecipes = el['unSelectedRecipes']
-        order_data.append(
-            {
-                "category_id": category_id,
-                "food_id": food_id,
-                "amount": amount,
-                "isMenu": isMenu,
-                "unSelectedRecipes": unSelectedRecipes
-            }
-        )
-        order = Order(
-            customer_id=client.id,
-            order=str(order_data),
-            DamandeType=str(DamandeType)
-        )
-        db.session.add(order)
-        db.session.commit()
+# @socketio.on('order')
+@app.route('/get_client_order', methods=["POST", "GET"])
+# @cross_origin(origin='*', headers=['Content- Type', 'json'])
+def get_client_order():
+    if request.method == "POST":
+        data = request.get_json()
 
-    print({"client_id": client.id, "order": order_data})
+        # send(data, broadcast=True)
+        client_token = decode_token(data['user'])['sub']
+        client = Customer.query.filter_by(username=str(client_token)).first()
+        order = data['order']
+        DamandeType = data['DamandeType']
+        if client:
+            order_data = []
+            for el in order:
+                category_id = el['category']
+                food_id = el['id']
+                amount = el['amount']
+                isMenu = el['isMenu']
+                unSelectedRecipes = el['unSelectedRecipes']
+                order_data.append(
+                    {
+                        "category_id": category_id,
+                        "food_id": food_id,
+                        "amount": amount,
+                        "isMenu": isMenu,
+                        "unSelectedRecipes": unSelectedRecipes
+                    }
+                )
+                order = Order(
+                    customer_id=client.id,
+                    order=str(order_data),
+                    DamandeType=str(DamandeType)
+                )
+
+                db.session.flush()
+                db.session.add(order)
+                db.session.commit()
+            return {"client_id": client.id, "order": order_data, "isConfirmed": True, 'OrderNum': order.id}
+        else:
+            print({"client_id": client.id, "order": order_data})
+            return {"client_id": client.id, "order": order_data}
 
 
 @app.route('/logout')
@@ -613,13 +625,13 @@ def supplement():
         return render_template('supplement.html', supplement=supplement, items_supplement_data=items_supplement_data, Categories=Categories)
 
 
-@socketio.on('getSuppdata')
-def getSuppdata(data):
-    if data['id'] != -1:
-        item = ItemSupplement.query.get_or_404(int(data['id']))
-        print(ItemSupplementSchema().dump(item))
-        item.isAvailable = data['status']
-        db.session.commit()
+@app.route('/getSuppdata', methods=['GET', 'POST'])
+def getSuppdata():
+    # if data['id'] != -1:
+    #     item = ItemSupplement.query.get_or_404(int(data['id']))
+    #     print(ItemSupplementSchema().dump(item))
+    #     item.isAvailable = data['status']
+    #     db.session.commit()
 
     suppData = Supplement.query.all()
     itemSuppData = ItemSupplement.query.all()
@@ -633,7 +645,8 @@ def getSuppdata(data):
 
     finalData = {'suppData': suppData, 'itemSuppData': itemSuppData}
 
-    emit('getSuppdata', finalData, broadcast=True)
+    # emit('getSuppdata', finalData, broadcast=True)
+    return (finalData)
 
 
 @app.route('/categories', methods=['POST', 'GET'])
@@ -862,9 +875,9 @@ def UpdateArticle(id):
         return render_template('update_article.html', el=item_to_update, Recipes=item_to_update.recipes)
 
 
-@socketio.on('message')
-def test(data):
-    print(data)
+# @socketio.on('message')
+# def test(data):
+#     print(data)
 
 
 @app.errorhandler(404)
@@ -875,5 +888,5 @@ def not_found(e):
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
-    # app.run(debug=True)
+    # socketio.run(app, debug=True)
+    app.run(debug=True)
