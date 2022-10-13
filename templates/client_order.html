@@ -109,10 +109,12 @@
             </td>
 
             <td>
-              {%if article.unSelectedRecipes|length == 0%} / {%endif%} {%for
-              recip in article.unSelectedRecipes%}
-              <span class="badge badge-ghost badge-md"> {{recip.name}} </span>
-              {%endfor%}
+              <div class="flex flex-col">
+                {%if article.unSelectedRecipes|length == 0%} / {%endif%} {%for
+                recip in article.unSelectedRecipes%}
+                <span class="badge badge-ghost badge-md"> {{recip.name}} </span>
+                {%endfor%}
+              </div>
               <!-- <br />
               <span class="badge badge-ghost badge-sm"
                 >Desktop Support Technician</span
@@ -129,10 +131,11 @@
               {%if article.isMenu %}
               <span>
                 €{{(article.food.prix|float * article.amount|int) +
-                (article.amount|int * 2) + article.totalSupp}}
+                (article.amount|int * 2) +( article.totalSupp *
+                article.amount|int)}}
               </span>
-              {%else%} €{{article.food.prix|float * article.amount|int +
-              article.totalSupp}} {%endif%}
+              {%else%} €{{(article.food.prix|float * article.amount|int )+
+              (article.totalSupp * article.amount|int)}} {%endif%}
             </td>
           </tr>
           {%endfor%}

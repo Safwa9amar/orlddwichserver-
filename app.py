@@ -503,7 +503,6 @@ def orders():
                 "unSelectedRecipes": recip_arr,
                 "supplement": supp_arr,
                 "totalSupp": totalSupp
-
             }
 
             full_order_data.append(obj)
