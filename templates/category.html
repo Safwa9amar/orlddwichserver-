@@ -40,7 +40,9 @@
 
         <td>{{el.prix}}</td>
         <td>{{item.name}}</td>
-        <td>{{el.recipes}}</td>
+        <td class="overflow-hidden">
+          <p>{{el.recipes}}</p>
+        </td>
 
         <th>
           <a
@@ -116,6 +118,12 @@
           </label>
         </div>
 
+        <div class="flex gap-4">
+          <input name="menu" type="checkbox" class="checkbox" />
+          <label class="input-group">
+            <span>Avec menus</span>
+          </label>
+        </div>
         <div class="form-control">
           <label class="input-group input-group-vertical">
             <span>la recette</span>

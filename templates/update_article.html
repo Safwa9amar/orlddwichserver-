@@ -3,7 +3,7 @@
 <form
   method="POST"
   action="/update_article/{{el.id}}"
-  class="m-10"
+  class="m-10 lg:w-1/4"
   enctype="multipart/form-data"
 >
   <input type="hidden" name="category_id" id="category_id" />
@@ -34,7 +34,13 @@
         />
       </label>
     </div>
-
+    <div class="flex justify-start gap-4">
+      <input name="menu" type="checkbox" {{"checked" if el.with_menu else "ss"}}
+      class="checkbox" />
+      <label class="input-group">
+        <span>Avec menus</span>
+      </label>
+    </div>
     <div class="form-control">
       <label class="input-group input-group-vertical">
         <span>la recette</span>

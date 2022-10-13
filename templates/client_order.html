@@ -71,6 +71,7 @@
         <thead>
           <tr>
             <th>L'article</th>
+            <th>Supplément</th>
             <th>Sans</th>
             <th>Quantité</th>
             <th>Prix</th>
@@ -100,8 +101,16 @@
                 </div>
               </div>
             </td>
+            <td class="flex flex-col gap-2">
+              {%if article.supplement|length == 0%} / {%endif%} {%for supp in
+              article.supplement%}
+              <span>{{supp['count']}}x {{supp['supp'].name}} </span>
+              {%endfor%}
+            </td>
+
             <td>
-              {%for recip in article.unSelectedRecipes%}
+              {%if article.unSelectedRecipes|length == 0%} / {%endif%} {%for
+              recip in article.unSelectedRecipes%}
               <span class="badge badge-ghost badge-md"> {{recip.name}} </span>
               {%endfor%}
               <!-- <br />
@@ -113,17 +122,17 @@
             <td>
               €{{article.food.prix}} {%if article.isMenu %}
               <span>+ €2 Menu</span>
-              {%endif%}
+              {%endif%} {%if article.supplement|length > 0 %} +
+              €{{article.totalSupp}} Supplément {%endif%}
             </td>
             <td>
               {%if article.isMenu %}
-
               <span>
                 €{{(article.food.prix|float * article.amount|int) +
-                (article.amount|int * 2)}}
+                (article.amount|int * 2) + article.totalSupp}}
               </span>
-              {%else%} €{{article.food.prix|float * article.amount|int}}
-              {%endif%}
+              {%else%} €{{article.food.prix|float * article.amount|int +
+              article.totalSupp}} {%endif%}
             </td>
           </tr>
           {%endfor%}

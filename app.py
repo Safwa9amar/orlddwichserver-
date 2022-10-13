@@ -140,7 +140,7 @@ class ItemSupplement(db.Model):
     #   categoryID], overlaps="category,item_supplement")
 
     def __repr__(self) -> str:
-        return '<Categories %r>' % self.id
+        return '<Supp %r>' % self.id
 
 
 class Order(db.Model):
@@ -165,6 +165,7 @@ class Food(db.Model):
     Categorie = db.Column(db.String(200), nullable=False)
     rating = db.Column(db.Integer, nullable=True)
     recipes = db.Column(db.String, nullable=False)
+    with_menu = db.Column(db.Boolean, default=False)
     # category id
     categoryID = db.Column(db.Integer, ForeignKey("categories.id"))
     category = db.relationship('Categories', backref='food_category')
@@ -238,7 +239,7 @@ def get_client_order():
     if request.method == "POST":
         data = request.get_json()
 
-        print(data['user'])
+        print(data)
         # send(data, broadcast=True)
         client_token = decode_token(data['user'])['sub']
         client = Customer.query.filter_by(username=str(client_token)).first()
@@ -252,13 +253,15 @@ def get_client_order():
                 amount = el['amount']
                 isMenu = el['isMenu']
                 unSelectedRecipes = el['unSelectedRecipes']
+                supplement = el['supplement']
                 order_data.append(
                     {
                         "category_id": category_id,
                         "food_id": food_id,
                         "amount": amount,
                         "isMenu": isMenu,
-                        "unSelectedRecipes": unSelectedRecipes
+                        "unSelectedRecipes": unSelectedRecipes,
+                        "supplement": supplement
                     }
                 )
                 order = Order(
@@ -344,6 +347,8 @@ def registre_client():
                 else:
                     access_token = create_access_token(
                         identity=json['username'])
+                    refresh_token = create_refresh_token(
+                        identity=json['username'])
 
                     client = Customer(
                         username=json['username'],
@@ -367,7 +372,7 @@ def registre_client():
                         "Tel": client.Tel,
                         "adress": client.adress,
                     }
-                    return jsonify(access_token=access_token, userData=userData), 200
+                    return jsonify(access_token=access_token, refresh_token=refresh_token, userData=userData), 200
 
     return Response("{'a':'b'}", status=404, mimetype='application/json')
 
@@ -428,6 +433,8 @@ def api():
         for food_id in output['food_category']:
             for out in output2:
                 if food_id == out['id']:
+                    with_menu = out['with_menu']
+
                     out['img_url'] = url_for(
                         'static', filename=f"images/{out['img_url']}", _external=True)
                     # print(out['img_url'])
@@ -449,7 +456,7 @@ def api():
             el.pop('_recipes')
 
         category = {'id': _id, 'name':  str(_name),
-                    'img': str(img), 'icon': str(icon), 'list': list}
+                    'img': str(img), 'icon': str(icon), 'list': list, 'with_menu': with_menu}
         newOutputs.append(category)
     # print(recipes)
 
@@ -462,8 +469,7 @@ def orders():
     selected_order = request.args.get('order')
 
     final_data = []
-    client_orders = Order.query.order_by(desc(Order.id))
-
+    client_orders = Order.query.order_by(desc(Order.id))  #
     for order in client_orders:
         costumer = Customer.query.filter_by(id=order.customer_id).first()
         detaills = ast.literal_eval(order.order)
@@ -471,17 +477,33 @@ def orders():
         recip_arr = []
         montants = []
         for detaill in detaills:
+            supp_arr = []
+            totalSupp = 0
+            for supp in detaill['supplement']:
+                supp_item = ItemSupplement.query.filter_by(
+                    id=supp['item_id']).first()
+
+                supp_arr.append({'supp': supp_item, 'count': supp['count']})
+                totalSupp = totalSupp + (supp_item.Prix * int(supp['count']))
+
+            montants.append(totalSupp * int(detaill['amount']))
+
             montants.append(float(Food.query.filter_by(
                 id=detaill['food_id']).first().prix) * int(detaill['amount']))
             if detaill['isMenu']:
                 montants.append(2 * int(detaill['amount']))
+
             for recip in detaill['unSelectedRecipes']:
                 recip_arr.append(Recipe.query.filter_by(id=recip).first())
+
             obj = {
                 "food": Food.query.filter_by(id=detaill['food_id']).first(),
                 "isMenu": detaill['isMenu'],
                 "amount": detaill['amount'],
-                "unSelectedRecipes": recip_arr
+                "unSelectedRecipes": recip_arr,
+                "supplement": supp_arr,
+                "totalSupp": totalSupp
+
             }
 
             full_order_data.append(obj)
@@ -502,6 +524,7 @@ def orders():
         }
 
         final_data.append(order_data)
+    # print(final_data)
 
     try:
         if selected_order != None:
@@ -710,6 +733,10 @@ def Category(id):
         food_name = request.form['name']
         food_price = request.form['price']
         food_recips = request.form['recip']
+        try:
+            with_menu = True if request.form['menu'] == 'on' else False
+        except KeyError:
+            with_menu = False
         uploaded_image = request.files['photo']
 
         if uploaded_image.filename != '':
@@ -728,7 +755,8 @@ def Category(id):
                 rating=3,
                 categoryID=item_category.id,
                 Categorie=item_category.name,
-                recipes=food_recips
+                recipes=food_recips,
+                with_menu=with_menu
             )
             db.session.add(food)
             db.session.flush()
@@ -843,6 +871,11 @@ def UpdateArticle(id):
             food_name = request.form['name']
             food_price = request.form['price']
             food_recips = request.form['recip']
+            try:
+                with_menu = True if request.form['menu'] == 'on' else False
+            except KeyError:
+                with_menu = False
+
             article_uploaded_image = request.files['photo']
 
             if article_uploaded_image.filename != '':
@@ -860,6 +893,7 @@ def UpdateArticle(id):
             item_to_update.prix = food_price
             item_to_update.recipes = food_recips
             item_to_update.img_url = filename
+            item_to_update.with_menu = with_menu
 
             recipe_db__data = Recipe.query.all()
 
