@@ -1,4 +1,5 @@
 import ast
+from itertools import count
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy.fields import Nested
@@ -79,6 +80,22 @@ class Customer(db.Model):
 
     def verify_password(self, pwd):
         return check_password_hash(self.password, pwd)
+
+
+class Rating(db.Model):
+    __tablename__ = 'rating'
+    # food data
+    id = db.Column(db.Integer, primary_key=True)
+    count = db.Column(db.Integer, nullable=False)
+    # Custumer id
+    UserId = db.Column(db.Integer, ForeignKey("customer.id"))
+    user = db.relationship('Customer', backref='rating')
+
+    FoodID = db.Column(db.Integer, ForeignKey("food_category.id"))
+    food = db.relationship('Food', backref='__rating')
+
+    def __repr__(self) -> str:
+        return '<Rating %r>' % self.id
 
 
 class User(db.Model, UserMixin):
@@ -169,6 +186,9 @@ class Food(db.Model):
     # category id
     categoryID = db.Column(db.Integer, ForeignKey("categories.id"))
     category = db.relationship('Categories', backref='food_category')
+    # ratin
+    # ratingID = db.Column(db.Integer, ForeignKey("Rating.id"))
+    # rating = db.relationship('Rating', backref='food_category')
 
     def __repr__(self) -> str:
         return '<Food %r>' % self.id
@@ -186,6 +206,14 @@ class Recipe(db.Model):
 
     def __repr__(self) -> str:
         return '<Recip %r>' % self.id
+
+
+class RatingSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Rating
+        load_instance = True
+        include_fk = True
+        include_relationships = True
 
 
 class RecipeSchema(ma.SQLAlchemyAutoSchema):
@@ -410,6 +438,81 @@ def dashbord():
 def inject_categories():
     data = Categories.query.order_by(Categories.id).all()
     return dict(data=data)
+
+
+@app.route('/rating', methods=['GET', 'POST'])
+def rating():
+    if request.method == 'GET':
+        food_id = request.args.get('get_rate_data')
+        # return ""
+        TotalRating = len(RatingSchema(many=True).dump(
+            Rating.query.filter_by(FoodID=food_id)))
+
+        fiveStars = len(RatingSchema(many=True).dump(
+            Rating.query.filter_by(count=5, FoodID=food_id)))
+
+        fourStars = len(RatingSchema(many=True).dump(
+            Rating.query.filter_by(count=4, FoodID=food_id)))
+        threeStars = len(RatingSchema(many=True).dump(
+            Rating.query.filter_by(count=3, FoodID=food_id)))
+
+        twotars = len(RatingSchema(many=True).dump(
+            Rating.query.filter_by(count=2, FoodID=food_id)))
+
+        oneStars = len(RatingSchema(many=True).dump(
+            Rating.query.filter_by(count=1, FoodID=food_id)))
+        print({
+            'tatalRating': TotalRating, "rating": [
+                {'5': fiveStars},
+                {'4': fourStars},
+                {'3': threeStars},
+                {'2': twotars},
+                {'1': oneStars}]})
+
+        return jsonify({
+            'tatalRating': TotalRating, "rating": [
+                {'5': fiveStars},
+                {'4': fourStars},
+                {'3': threeStars},
+                {'2': twotars},
+                {'1': oneStars}]})
+    if request.method == 'POST':
+        req = request.get_json()
+        try:
+            print(req['user'], req['rating'], req['food_id'])
+            # return ''
+            getUserRating = Rating.query.filter_by(
+                UserId=int(req['user']), FoodID=req['food_id']).first()
+            if getUserRating:
+                getUserRating.count = req['rating']
+                db.session.commit()
+            else:
+                rat = Rating(count=req['rating'],
+                             UserId=req['user'], FoodID=req['food_id'])
+                db.session.add(rat)
+                db.session.commit()
+        except KeyError:
+            return jsonify({'info': 'you are not registred'}), 401
+
+    return ""
+    # print(RatingSchema().dump(getUserRating))
+    #     return RatingSchema().dump(getUserRating)
+    # else:
+    #     # rat = Rating(
+    #     #     count=5,
+    #     #     UserId=req['userId']
+    #     # )
+    #     # db.session.add(rat)
+    #     # db.session.commit()
+    #     return jsonify({'failed': id})
+
+    # rating = Rating.query.all()
+
+    # rating = RatingSchema(many=True).dump(rating)
+
+    # RatingSchema
+    # print(getUserRating)
+    # return 'rating'
 
 
 @app.route('/api', methods=['GET', 'POST'])

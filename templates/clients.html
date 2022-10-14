@@ -45,6 +45,9 @@
         <td>{{el.adress}}</td>
         <td>Purple</td>
         <th>
+          {%if Order.query.order_by(Order.id.desc()).filter_by(customer_id
+          =el.id).first().id %}
+
           <a
             href="{{url_for('orders', order=Order.query.order_by(Order.id.desc()).filter_by(customer_id =
             el.id).first().id )}}"
@@ -54,6 +57,7 @@
             el.id).first().id}}
             <i class="fa-solid fa-arrow-up-right-from-square mx-2"></i>
           </a>
+          {%endif%}
         </th>
       </tr>
       {%endfor%}
