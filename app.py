@@ -1038,7 +1038,7 @@ def UpdateArticle(id):
         return render_template('update_article.html', el=item_to_update, Recipes=item_to_update.recipes)
 
 
-@socketio.on('message')
+@socketio.on('message', namespace='/test')
 def test(data):
     print(data)
 
