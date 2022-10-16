@@ -8,13 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
     let notification_area = document.getElementById("notification_area");
   } catch (error) {}
 
-  async () => {
-    await socket.emit("message", {
-      test: "server side connected from socket file",
-    });
-  };
-
+  socket.emit("message", {
+    test: "server side connected from socket file",
+  });
+  setTimeout(() => {
+    socket.off("message");
+  }, 3000);
   socket.on("message", function (data) {
+    console.log("msg from server");
     try {
       notification_indicator.textContent = JSON.parse(data).length;
       let html = `
