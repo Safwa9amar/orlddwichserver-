@@ -649,6 +649,7 @@ def orders():
         for detaill in detaills:
             supp_arr = []
             totalSupp = 0
+            print(detaill)
             for supp in detaill['supplement']:
                 supp_item = ItemSupplement.query.filter_by(
                     id=supp['item_id']).first()
