@@ -650,12 +650,15 @@ def orders():
             supp_arr = []
             totalSupp = 0
             print(detaill)
-            for supp in detaill['supplement']:
-                supp_item = ItemSupplement.query.filter_by(
-                    id=supp['item_id']).first()
+            if detaill['supplement'] != None:
+                for supp in detaill['supplement']:
+                    supp_item = ItemSupplement.query.filter_by(
+                        id=supp['item_id']).first()
 
-                supp_arr.append({'supp': supp_item, 'count': supp['count']})
-                totalSupp = totalSupp + (supp_item.Prix * int(supp['count']))
+                    supp_arr.append(
+                        {'supp': supp_item, 'count': supp['count']})
+                    totalSupp = totalSupp + \
+                        (supp_item.Prix * int(supp['count']))
 
             montants.append(totalSupp * int(detaill['amount']))
 
