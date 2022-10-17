@@ -28,14 +28,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // });
   // socket.on("order", function (data) {
   // console.log("msg from server");
+
   setInterval(() => {
     fetshNotif()
       .then((data) => {
-        let newData = data.filter((el) => el.isViewed !== true);
-        // console.log(newData);
-        notification_indicator.innerText = newData.length;
-        if (newData.length <= 0) notification_indicator.style.display = "none";
-        if (newData.length > 0) notification_indicator.style.display = "block";
+        try {
+          let newData = data.filter((el) => el.isViewed !== true);
+          // console.log(newData);
+          notification_indicator.innerText = newData.length;
+          if (newData.length <= 0)
+            notification_indicator.style.display = "none";
+          if (newData.length > 0)
+            notification_indicator.style.display = "block";
+        } catch (error) {}
         return data;
       })
       .then((data) => {
@@ -52,35 +57,35 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify({ viwedArr: newViwedData }),
           });
         });
-        let newData = data.filter((el) => el.isReaded !== true);
-        if (newData.length === 0) return;
-        notification_area.innerHTML = "";
         try {
-          document.getElementById("recent").innerHTML = "";
-        } catch (error) {}
+          let newData = data.filter((el) => el.isReaded !== true);
+          if (newData.length === 0) return;
+          notification_area.innerHTML = "";
 
-        newData.forEach((el) => {
-          let html = `
+          document.getElementById("recent").innerHTML = "";
+
+          newData.forEach((el) => {
+            let html = `
         <a href="${url}/orders?order=${el.order_id}" class="w-full flex flex-col gap-2   " data-attr="${el.id}" >
             <h1>${el.custumer_nom} ${el.custumer_prenom} a passé une commande</h1>
             <p>${el.order_date}</p>
         </a>
         `;
 
-          let span = document.createElement("span");
-          span.innerHTML = html;
-          notification_area.appendChild(span);
+            let span = document.createElement("span");
+            span.innerHTML = html;
+            notification_area.appendChild(span);
 
-          // last camnnd appending
+            // last camnnd appending
 
-          let template = `
+            let template = `
           <div class="w-full self-start flex items-start gap-4 justify-between">
             <div class="flex gap-2">
               <div class="w-32">
                 <p>${el.custumer_nom} ${el.custumer_prenom}.</p>
                 <a href="${url}/orders?order=${
-            el.order.id
-          }" class="text-warning font-bold">#${el.order.id}</a>
+              el.order.id
+            }" class="text-warning font-bold">#${el.order.id}</a>
               </div>
             </div>
           <div class="flex gap-1">
@@ -130,12 +135,11 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       
           `;
-          try {
             let span2 = document.createElement("span");
             span2.innerHTML = template;
             document.getElementById("recent").append(span2);
-          } catch (error) {}
-        });
+          });
+        } catch (error) {}
       })
       .finally(() => {
         let edit_notif = document.querySelectorAll("[data-attr]");

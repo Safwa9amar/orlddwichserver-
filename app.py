@@ -1,4 +1,5 @@
 import ast
+from time import timezone
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy.fields import Nested
@@ -21,6 +22,12 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 
 
 # from docx import Document
+from sqlalchemy import create_engine
+
+
+def deleteTabel(tableInstance):
+    eng = create_engine('sqlite:///database.db')
+    tableInstance.__table__.drop(eng)
 
 
 app = Flask(__name__)
@@ -163,8 +170,7 @@ class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, nullable=False)
     order = db.Column(db.String, nullable=False)
-    order_date = db.Column(
-        db.DateTime, default=datetime.now())
+    order_date = db.Column(db.DateTime(timezone=True), default=datetime.now)
     DamandeType = db.Column(db.String, nullable=False)
     status = db.Column(db.Integer, default=1)
 
@@ -1115,6 +1121,7 @@ def UpdateArticle(id):
 @app.route('/notifications', methods=["GET", "POST"])
 # @login_required
 def MyNotification():
+    print(datetime.now())
     if request.method == "POST":
         data = request.get_json()
         viewedNotif = data.get('viwedArr')
@@ -1131,26 +1138,29 @@ def MyNotification():
             selected_notif.isReaded = True
 
         db.session.commit()
-        # print(data)
+        print(data)
         return jsonify(data)
 
     if request.method == "GET":
         notif = Notification.query.order_by(desc(Notification.id))
         notif_arr = []
-        for el in notif:
-            obj = {
-                "id": el.id,
-                "isReaded": el.isReaded,
-                "isViewed": el.isViewed,
-                "order": OrderSchema().dump(el.order),
-                "order_id": el.order.id,
-                "order_date": el.order.order_date,
-                "custumer_nom": el.customer.Nom,
-                "custumer_prenom": el.customer.Prenom,
-            }
-            notif_arr.append(obj)
+        try:
+            for el in notif:
+                obj = {
+                    "id": el.id,
+                    "isReaded": el.isReaded,
+                    "isViewed": el.isViewed,
+                    "order": OrderSchema().dump(el.order),
+                    "order_id": el.order.id,
+                    "order_date": el.order.order_date,
+                    "custumer_nom": el.customer.Nom,
+                    "custumer_prenom": el.customer.Prenom,
+                }
+                notif_arr.append(obj)
 
-        return jsonify(notif_arr)
+            return jsonify(notif_arr)
+        except AttributeError:
+            return jsonify({"res": "nodata"})
 
 
 # @socketio.on('message', namespace='/test')
