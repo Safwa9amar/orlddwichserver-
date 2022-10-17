@@ -1,4 +1,3 @@
-import time
 import ast
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
@@ -164,7 +163,8 @@ class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, nullable=False)
     order = db.Column(db.String, nullable=False)
-    order_date = db.Column(db.DateTime, default=datetime.utcnow)
+    order_date = db.Column(
+        db.DateTime, default=datetime.now())
     DamandeType = db.Column(db.String, nullable=False)
     status = db.Column(db.Integer, default=1)
 
@@ -294,18 +294,6 @@ class CategoriesSchema(ma.SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
         Nested(FoodSchema, many=True)
-
-
-EPOCH_DATETIME = datetime(1970, 1, 1)
-SECONDS_PER_DAY = 24*60*60
-
-
-def utc_to_local_datetime(utc_datetime):
-    delta = utc_datetime - EPOCH_DATETIME
-    utc_epoch = SECONDS_PER_DAY * delta.days + delta.seconds
-    time_struct = time.localtime(utc_epoch)
-    dt_args = time_struct[:6] + (delta.microseconds,)
-    return datetime(*dt_args)
 
 
 @login_manager.user_loader
@@ -711,12 +699,15 @@ def orders():
         if selected_order != None:
             for el in final_data:
                 if el['order_id'] == int(selected_order):
-                    return render_template('client_order.html', order_data=el, dateconv=utc_to_local_datetime)
+                    # dateconv=utc_to_local_datetime
+                    return render_template('client_order.html', order_data=el)
 
     except TypeError:
-        return render_template('orders.html', client_orders=final_data, dateconv=utc_to_local_datetime)
+        # dateconv=utc_to_local_datetime
+        return render_template('orders.html', client_orders=final_data)
 
-    return render_template('orders.html', client_orders=final_data, dateconv=utc_to_local_datetime)
+    # dateconv=utc_to_local_datetime
+    return render_template('orders.html', client_orders=final_data)
 
 
 @app.route('/clients')
@@ -1149,7 +1140,7 @@ def MyNotification():
                 "isViewed": el.isViewed,
                 "order": OrderSchema().dump(el.order),
                 "order_id": el.order.id,
-                "order_date": utc_to_local_datetime(el.order.order_date),
+                "order_date": el.order.order_date,
                 "custumer_nom": el.customer.Nom,
                 "custumer_prenom": el.customer.Prenom,
             }

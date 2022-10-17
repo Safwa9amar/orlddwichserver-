@@ -36,10 +36,10 @@
         </td>
         <td>{{el.DamandeType.type}}</td>
         <td>
-          {{dateconv(el.date).date()}}
+          {{(el.date).date()}}
           <br />
           <span class="badge badge-ghost badge-sm"
-            >{{dateconv(el.date).strftime("%H:%M:%S")}}</span
+            >{{(el.date).strftime("%H:%M:%S")}}</span
           >
         </td>
         <td>{{el.client.Nom}} {{el.client.Prenom}}</td>

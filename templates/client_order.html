@@ -153,8 +153,8 @@
   <ul class="steps m-4 p-5 bg-base-100 shadow-xl rounded-lg">
     <li class="step step-primary">
       <p>Commande créée</p>
-      <p>{{dateconv(order_data.date).date()}}</p>
-      <p>{{dateconv(order_data.date).strftime("%H:%M:%S")}}</p>
+      <p>{{(order_data.date).date()}}</p>
+      <p>{{(order_data.date).strftime("%H:%M:%S")}}</p>
     </li>
     <li class='{{"step step-primary" if order_data.status == 2 else "step" }}'>
       <p>A été approuvé</p>
