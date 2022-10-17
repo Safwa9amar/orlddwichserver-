@@ -1118,7 +1118,7 @@ def UpdateArticle(id):
 
 
 @app.route('/notifications', methods=["GET", "POST"])
-# @login_required
+@login_required
 def MyNotification():
     if request.method == "POST":
         data = request.get_json()
