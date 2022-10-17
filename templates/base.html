@@ -24,11 +24,11 @@
       rel="stylesheet"
       href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css"
     />
-    <script
-      src="https://cdn.socket.io/4.5.3/socket.io.min.js"
-      integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi"
+    <!-- <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+      integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
       crossorigin="anonymous"
-    ></script>
+    ></script> -->
 
     {%block head%}{%endblock%}
   </head>
@@ -81,6 +81,9 @@
               class="btn btn-ghost normal-case text-xl"
               >Worlds Dwich 42</a
             >
+            <div class="text-sm breadcrumbs">
+              <ul id="breadcrumbs"></ul>
+            </div>
           </div>
 
           <div class="flex gap-10">
@@ -88,10 +91,9 @@
               <span
                 class="indicator-item badge badge-secondary"
                 id="notification_indicator"
-                >3</span
-              >
+              ></span>
               <div class="dropdown">
-                <label tabindex="0" class="btn h-fit"
+                <label id="notif_indicator" tabindex="0" class="btn h-fit"
                   ><i class="fa-solid fa-bell"></i
                 ></label>
                 <div
@@ -100,7 +102,8 @@
                 >
                   <div class="card-body">
                     <h3 class="card-title">Notifications</h3>
-                    <span id="notification_area"> </span>
+                    <span class="flex flex-col gap-4" id="notification_area">
+                    </span>
                   </div>
                 </div>
               </div>
@@ -194,5 +197,12 @@
     });
   </script>
   <script src="{{url_for('static', filename='js/supp.js')}}"></script>
-  <script defer src="{{url_for('static', filename='js/socket.js')}}"></script>
+  <script
+    defer
+    src="{{url_for('static', filename='js/notification.js')}}"
+  ></script>
+  <script
+    defer
+    src="{{url_for('static', filename='js/breadcrumbs.js')}}"
+  ></script>
 </html>

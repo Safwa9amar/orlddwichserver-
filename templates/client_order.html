@@ -16,7 +16,7 @@
         <span class="text-bold">€{{order_data.montants}}</span>
       </h1>
 
-      <p>{{order_data.client.Nom}} {{order_data.client.Prenom}}</p>
+      <p>Client : {{order_data.client.Nom}} {{order_data.client.Prenom}}</p>
       <!-- <p>{{order_data.client.adress}}</p> -->
       <p>id : {{order_data.client.id}}</p>
       <div class="flex gap-2">
@@ -43,20 +43,26 @@
           class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
         >
           <li>
-            <a class="text-primary"
+            <a
+              class="text-primary"
+              href="{{url_for('order_status', accept=order_data.order_id)}}"
               ><i class="fa-regular fa-circle-check"></i>Accepet order</a
             >
           </li>
           <li>
-            <a class="text-error"
+            <a
+              class="text-error"
+              href="{{url_for('order_status', reject=order_data.order_id)}}"
               ><i class="fa-regular fa-circle-xmark"></i> Reject order</a
             >
           </li>
         </ul>
       </div>
       {%endif%} {%if order_data.status ==2 %}
-      <button class="btn btn-outline btn-success">livré</button>
+      <button class="btn btn-outline btn-success">Approuvé</button>
       {%endif%} {%if order_data.status ==3 %}
+      <button class="btn btn-outline btn-success">livré</button>
+      {%endif%} {%if order_data.status ==4 %}
       <button class="btn btn-outline btn-btn-ghost">annulé</button>
       {%endif%}
     </div>
@@ -147,20 +153,20 @@
   <ul class="steps m-4 p-5 bg-base-100 shadow-xl rounded-lg">
     <li class="step step-primary">
       <p>Commande créée</p>
-      <p>{{order_data.date.date()}}</p>
-      <p>{{order_data.date.time()}}</p>
+      <p>{{dateconv(order_data.date).date()}}</p>
+      <p>{{dateconv(order_data.date).strftime("%H:%M:%S")}}</p>
     </li>
-    <li class="step">
+    <li class='{{"step step-primary" if order_data.status == 2 else "step" }}'>
       <p>A été approuvé</p>
-      <p>jeu. 21 juil. 2020, 11:49</p>
+      <!-- <p>jeu. 21 juil. 2020, 11:49</p> -->
     </li>
-    <li class="step">
+    <li class='{{"step step-primary" if order_data.status == 2 else "step" }}'>
       <p>À la livraison</p>
-      <p>sam. 23 juil. 2020, 13:24</p>
+      <!-- <p>sam. 23 juil. 2020, 13:24</p> -->
     </li>
     <li class="step">
       <p>Commande livrée</p>
-      <p>sam. 23 juil. 2020, 13:24</p>
+      <!-- <p>sam. 23 juil. 2020, 13:24</p> -->
     </li>
   </ul>
   {%endif%}

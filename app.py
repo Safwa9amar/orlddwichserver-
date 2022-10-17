@@ -1,5 +1,5 @@
+import time
 import ast
-from itertools import count
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy.fields import Nested
@@ -28,7 +28,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'acuUl88CzudhD4ierZDZZeyp5eRmiuz8'
 # Change this!
 app.config["JWT_SECRET_KEY"] = "mU0acnVXyjYMXkOlcFhJohofJOf7iTXy"
-socketio = SocketIO(app, cors_allowed_origins="*")
+# socketio = SocketIO(app, cors_allowed_origins="*")
 
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.db'
@@ -172,6 +172,23 @@ class Order(db.Model):
         return '<Order %r>' % self.id
 
 
+class Notification(db.Model):
+    __tablename__ = 'notification'
+    id = db.Column(db.Integer, primary_key=True)
+    isViewed = db.Column(db.Boolean, default=False)
+    isReaded = db.Column(db.Boolean, default=False)
+
+    # Custumer
+    customer_id = db.Column(db.Integer, ForeignKey("customer.id"))
+    customer = db.relationship('Customer', backref='notification')
+    # order
+    order_id = db.Column(db.Integer, ForeignKey("order.id"))
+    order = db.relationship('Order', backref='notification')
+
+    def __repr__(self) -> str:
+        return '<Notification %r>' % self.id
+
+
 class Food(db.Model):
     __tablename__ = 'food_category'
     # food data
@@ -216,6 +233,30 @@ class RatingSchema(ma.SQLAlchemyAutoSchema):
         include_relationships = True
 
 
+class OrderSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Order
+        load_instance = True
+        include_fk = True
+        include_relationships = True
+
+
+class CustomerSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Customer
+        load_instance = True
+        include_fk = True
+        include_relationships = True
+
+
+class NotificationSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Notification
+        load_instance = True
+        include_fk = True
+        include_relationships = True
+
+
 class RecipeSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Recipe
@@ -255,6 +296,18 @@ class CategoriesSchema(ma.SQLAlchemyAutoSchema):
         Nested(FoodSchema, many=True)
 
 
+EPOCH_DATETIME = datetime(1970, 1, 1)
+SECONDS_PER_DAY = 24*60*60
+
+
+def utc_to_local_datetime(utc_datetime):
+    delta = utc_datetime - EPOCH_DATETIME
+    utc_epoch = SECONDS_PER_DAY * delta.days + delta.seconds
+    time_struct = time.localtime(utc_epoch)
+    dt_args = time_struct[:6] + (delta.microseconds,)
+    return datetime(*dt_args)
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
@@ -267,7 +320,7 @@ def get_client_order():
     if request.method == "POST":
         data = request.get_json()
 
-        print(data)
+        # print(data)
         # send(data, broadcast=True)
         client_token = decode_token(data['user'])['sub']
         client = Customer.query.filter_by(username=str(client_token)).first()
@@ -297,10 +350,17 @@ def get_client_order():
                     order=str(order_data),
                     DamandeType=str(DamandeType)
                 )
-
                 db.session.flush()
                 db.session.add(order)
                 db.session.commit()
+                print(order.id)
+                notif = Notification(
+                    customer_id=client.id,
+                    order_id=order.id,
+                )
+                db.session.add(notif)
+                db.session.commit()
+
             return {"client_id": client.id, "order": order_data, "isConfirmed": True, 'OrderNum': order.id}
         else:
             print({"client_id": client.id, "order": order_data})
@@ -461,13 +521,13 @@ def rating():
 
         oneStars = len(RatingSchema(many=True).dump(
             Rating.query.filter_by(count=1, FoodID=food_id)))
-        print({
-            'tatalRating': TotalRating, "rating": [
-                {'5': fiveStars},
-                {'4': fourStars},
-                {'3': threeStars},
-                {'2': twotars},
-                {'1': oneStars}]})
+        # print({
+        #     'tatalRating': TotalRating, "rating": [
+        #         {'5': fiveStars},
+        #         {'4': fourStars},
+        #         {'3': threeStars},
+        #         {'2': twotars},
+        #         {'1': oneStars}]})
 
         return jsonify({
             'tatalRating': TotalRating, "rating": [
@@ -479,7 +539,7 @@ def rating():
     if request.method == 'POST':
         req = request.get_json()
         try:
-            print(req['user'], req['rating'], req['food_id'])
+            # print(req['user'], req['rating'], req['food_id'])
             # return ''
             getUserRating = Rating.query.filter_by(
                 UserId=int(req['user']), FoodID=req['food_id']).first()
@@ -566,6 +626,25 @@ def api():
     return jsonify(newOutputs)
 
 
+@app.route('/order_status', methods=['POST', 'GET'])
+@login_required
+def order_status():
+    accept = request.args.get('accept')
+    reject = request.args.get('reject')
+    if accept:
+        print('accpetd', accept)
+        selectedOrder = Order.query.get_or_404(accept)
+        selectedOrder.status = 2
+        db.session.commit()
+        return redirect(url_for('orders', order=accept))
+    if reject:
+        selectedOrder = Order.query.get_or_404(reject)
+        selectedOrder.status = 4
+        db.session.commit()
+        print('reject', reject)
+        return redirect(url_for('orders', order=reject))
+
+
 @app.route('/orders')
 @login_required
 def orders():
@@ -632,12 +711,12 @@ def orders():
         if selected_order != None:
             for el in final_data:
                 if el['order_id'] == int(selected_order):
-                    return render_template('client_order.html', order_data=el)
+                    return render_template('client_order.html', order_data=el, dateconv=utc_to_local_datetime)
 
     except TypeError:
-        return render_template('orders.html', client_orders=final_data)
+        return render_template('orders.html', client_orders=final_data, dateconv=utc_to_local_datetime)
 
-    return render_template('orders.html', client_orders=final_data)
+    return render_template('orders.html', client_orders=final_data, dateconv=utc_to_local_datetime)
 
 
 @app.route('/clients')
@@ -1038,9 +1117,51 @@ def UpdateArticle(id):
         return render_template('update_article.html', el=item_to_update, Recipes=item_to_update.recipes)
 
 
-@socketio.on('message', namespace='/test')
-def test(data):
-    print(data)
+@app.route('/notifications', methods=["GET", "POST"])
+@login_required
+def MyNotification():
+    if request.method == "POST":
+        data = request.get_json()
+        viewedNotif = data.get('viwedArr')
+        RededNotif = data.get('readed_notif_id')
+        if viewedNotif:
+            for el_id in viewedNotif:
+                selected_notif = Notification.query.get_or_404(int(el_id))
+                try:
+                    selected_notif.isViewed = True
+                except AttributeError:
+                    print('cc')
+        if RededNotif:
+            selected_notif = Notification.query.get_or_404(int(RededNotif))
+            selected_notif.isReaded = True
+
+        db.session.commit()
+        # print(data)
+        return jsonify(data)
+
+    if request.method == "GET":
+        notif = Notification.query.order_by(desc(Notification.id))
+        notif_arr = []
+        for el in notif:
+            obj = {
+                "id": el.id,
+                "isReaded": el.isReaded,
+                "isViewed": el.isViewed,
+                "order": OrderSchema().dump(el.order),
+                "order_id": el.order.id,
+                "order_date": utc_to_local_datetime(el.order.order_date),
+                "custumer_nom": el.customer.Nom,
+                "custumer_prenom": el.customer.Prenom,
+            }
+            notif_arr.append(obj)
+
+        return jsonify(notif_arr)
+
+
+# @socketio.on('message', namespace='/test')
+# def test(data):
+#     emit('message', 'test', broadcast=True)
+#     print("recived")
 
 
 @app.errorhandler(404)
@@ -1051,5 +1172,5 @@ def not_found(e):
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
-    # app.run(debug=True)
+    # socketio.run(app, debug=True)
+    app.run(debug=True)

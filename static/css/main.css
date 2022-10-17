@@ -7,11 +7,13 @@ html {
 
 body {
   width: 100%;
+  overflow: hidden;
 }
 
 
 
-.dataTables_filter, .dataTables_length{
+.dataTables_filter,
+.dataTables_length {
   margin-block: 1rem;
 
 }

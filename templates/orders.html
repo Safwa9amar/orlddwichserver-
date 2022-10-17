@@ -36,10 +36,10 @@
         </td>
         <td>{{el.DamandeType.type}}</td>
         <td>
-          {{el.date.date()}}
+          {{dateconv(el.date).date()}}
           <br />
           <span class="badge badge-ghost badge-sm"
-            >{{el.date.strftime("%H:%M:%S")}}</span
+            >{{dateconv(el.date).strftime("%H:%M:%S")}}</span
           >
         </td>
         <td>{{el.client.Nom}} {{el.client.Prenom}}</td>
@@ -47,13 +47,13 @@
         <td>{{el.montants}} €</td>
         <th>
           {%if el.status == 1 %}
-          <button class="btn btn-xs btn-outline btn-warning">
-            en attendant
-          </button>
+          <div class="btn btn-xs btn-outline btn-warning">en attendant</div>
           {%endif%} {%if el.status ==2 %}
-          <button class="btn btn-xs btn-outline btn-success">livré</button>
+          <div class="btn btn-xs btn-outline btn-info">Approuvé</div>
           {%endif%} {%if el.status ==3%}
-          <button class="btn btn-xs btn-outline btn-btn-ghost">annulé</button>
+          <div class="btn btn-xs btn-outline btn-success">livré</div>
+          {%endif%} {%if el.status ==4 %}
+          <div class="btn btn-xs btn-outline btn-btn-ghost">annulé</div>
           {%endif%}
         </th>
         <td>

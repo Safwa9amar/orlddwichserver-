@@ -64,6 +64,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   let theme_toggle = document.getElementById("theme-toggle");
   let data_theme = document.querySelector("[data-theme]");
+
   localStorage.getItem("theme") == null &&
     localStorage.setItem("theme", "dracula");
 
@@ -72,7 +73,6 @@ window.addEventListener("DOMContentLoaded", () => {
   let moon = document.getElementById("moon");
   let sun = document.getElementById("sun");
   let theme = localStorage.getItem("theme");
-
   if (theme === "lofi") {
     moon.classList.replace("swap-on", "swap-off");
     sun.classList.replace("swap-off", "swap-on");
@@ -83,7 +83,9 @@ window.addEventListener("DOMContentLoaded", () => {
       document
         .querySelector(".dataTables_length")
         .setAttribute("style", "color:#eee !important");
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   } else {
     moon.classList.replace("swap-off", "swap-on");
     sun.classList.replace("swap-on", "swap-off");
@@ -95,8 +97,11 @@ window.addEventListener("DOMContentLoaded", () => {
       document
         .querySelector(".dataTables_filter")
         .setAttribute("style", "color:#000 !important");
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   }
+
   theme_toggle.addEventListener("click", () => {
     if (data_theme.getAttribute("data-theme") === "lofi") {
       data_theme.setAttribute("data-theme", "dracula");
