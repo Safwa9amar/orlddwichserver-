@@ -24,6 +24,8 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 # from docx import Document
 from sqlalchemy import create_engine
 
+from dateutil.tz import tzutc, tzlocal
+
 
 def deleteTabel(tableInstance):
     eng = create_engine('sqlite:///database.db')
@@ -642,6 +644,7 @@ def order_status():
 @app.route('/orders')
 @login_required
 def orders():
+
     selected_order = request.args.get('order')
 
     final_data = []
@@ -694,7 +697,7 @@ def orders():
         order_data = {
             "order_id": order.id,
             "DamandeType": ast.literal_eval(order.DamandeType),
-            "date": order.order_date,
+            "date": order.order_date.astimezone(tzlocal()),
             "client": costumer,
             "adress": costumer.adress,
             "montants": total,
@@ -1121,7 +1124,7 @@ def UpdateArticle(id):
 @app.route('/notifications', methods=["GET", "POST"])
 # @login_required
 def MyNotification():
-    print(datetime.now())
+
     if request.method == "POST":
         data = request.get_json()
         viewedNotif = data.get('viwedArr')
