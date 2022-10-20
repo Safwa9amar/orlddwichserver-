@@ -15,7 +15,7 @@ window.addEventListener("DOMContentLoaded", () => {
         let message = el.getAttribute("message");
         // socket.emit(message, id);
         console.log(el);
-        fetch(`http://${document.domain}:${location.port}/delete_supp/${id}`, {
+        fetch(`${location.origin}/delete_supp/${id}`, {
           mode: "cors", // no-cors, *cors, same-origin
           method: "POST",
           // headers: {
