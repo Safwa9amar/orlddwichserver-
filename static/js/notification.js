@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   // const socket = io(`http://${document.domain}:${location.port}/test`);
-  const url = `http://${document.domain}:${location.port}`;
+  const url = `${location.origin}}`;
 
   let fetshNotif = async () => {
     let res = await fetch(`${url}/notifications`, {
