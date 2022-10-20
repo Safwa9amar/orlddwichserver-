@@ -57,25 +57,26 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify({ viwedArr: newViwedData }),
           });
         });
+        let newData = data.filter((el) => el.isReaded !== true);
+        if (newData.length === 0) return;
+        notification_area.innerHTML = "";
         try {
-          let newData = data.filter((el) => el.isReaded !== true);
-          if (newData.length === 0) return;
-          notification_area.innerHTML = "";
-
           document.getElementById("recent").innerHTML = "";
+        } catch (error) {}
 
-          newData.forEach((el) => {
-            let html = `
-        <a href="${url}/orders?order=${el.order_id}" class="w-full flex flex-col gap-2   " data-attr="${el.id}" >
-            <h1>${el.custumer_nom} ${el.custumer_prenom} a passé une commande</h1>
-            <p>${el.order_date}</p>
-        </a>
-        `;
+        newData.forEach((el) => {
+          let html = `
+            <a href="${url}/orders?order=${el.order_id}" class="w-full flex flex-col gap-2   " data-attr="${el.id}" >
+                <h1>${el.custumer_nom} ${el.custumer_prenom} a passé une commande</h1>
+                <p>${el.order_date}</p>
+            </a>
+            `;
 
-            let span = document.createElement("span");
-            span.innerHTML = html;
-            notification_area.appendChild(span);
+          let span = document.createElement("span");
+          span.innerHTML = html;
+          notification_area.appendChild(span);
 
+          try {
             // last camnnd appending
 
             let template = `
@@ -83,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="flex gap-2">
               <div class="w-32">
                 <p>${el.custumer_nom} ${el.custumer_prenom}.</p>
-                <a href="${url}/orders?order=${
+                <a data-attr="${el.id}" href="${url}/orders?order=${
               el.order.id
             }" class="text-warning font-bold">#${el.order.id}</a>
               </div>
@@ -138,8 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
             let span2 = document.createElement("span");
             span2.innerHTML = template;
             document.getElementById("recent").append(span2);
-          });
-        } catch (error) {}
+          } catch (error) {}
+        });
       })
       .finally(() => {
         let edit_notif = document.querySelectorAll("[data-attr]");

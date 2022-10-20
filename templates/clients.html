@@ -9,7 +9,7 @@
         <th>date d'adhésion</th>
         <th>nom complete</th>
         <th>Location</th>
-        <th>total dépensé</th>
+        <!-- <th>total dépensé</th> -->
         <th>dernière commande</th>
       </tr>
     </thead>
@@ -43,7 +43,7 @@
         </td>
         <td>{{el.Nom}} {{el.Prenom}}</td>
         <td>{{el.adress}}</td>
-        <td>Purple</td>
+        <!-- <td>Purple</td> -->
         <th>
           {%if Order.query.order_by(Order.id.desc()).filter_by(customer_id
           =el.id).first().id %}

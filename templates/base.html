@@ -24,6 +24,7 @@
       rel="stylesheet"
       href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css"
     />
+
     <!-- <script
       src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
       integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
@@ -102,7 +103,10 @@
                 >
                   <div class="card-body">
                     <h3 class="card-title">Notifications</h3>
-                    <span class="flex flex-col gap-4" id="notification_area">
+                    <span
+                      class="flex flex-col gap-4 max-h-[250px] w-fit overflow-y-auto"
+                      id="notification_area"
+                    >
                     </span>
                   </div>
                 </div>

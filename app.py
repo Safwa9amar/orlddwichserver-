@@ -1,5 +1,5 @@
 import ast
-from time import timezone
+from tkinter import EXCEPTION
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy.fields import Nested
@@ -389,6 +389,8 @@ def registre_client():
                     "email": client.email,
                     "Prenom": client.Prenom,
                     "Tel": client.Tel,
+                    "last_order": OrderSchema().dump(Order.query.order_by(Order.id.desc()).filter_by(customer_id=client.id).first())
+
                 }
                 return jsonify(userData), 200
 
@@ -411,6 +413,7 @@ def registre_client():
                         "email": client.email,
                         "Prenom": client.Prenom,
                         "Tel": client.Tel,
+                        "last_order": OrderSchema().dump(Order.query.order_by(Order.id.desc()).filter_by(customer_id=client.id).first())
                     }
                     return jsonify(access_token=access_token, refresh_token=refresh_token, userData=userData), 200
 
@@ -455,6 +458,8 @@ def registre_client():
                         "Prenom": client.Prenom,
                         "Tel": client.Tel,
                         "adress": client.adress,
+                        "last_order": OrderSchema().dump(Order.query.order_by(Order.id.desc()).filter_by(customer_id=client.id).first())
+
                     }
                     return jsonify(access_token=access_token, refresh_token=refresh_token, userData=userData), 200
 
@@ -571,6 +576,33 @@ def rating():
     # return 'rating'
 
 
+@app.route('/confirmer_deliver', methods=['POST'])
+def confirmerDeliver():
+    json = request.get_json()
+    id = request.get_json().get('id')
+    confirm_order = Order.query.get_or_404(id)
+
+    if request.method == "POST":
+        if decode_token(json['refrech']):
+            identity = decode_token(json['refrech'])['sub']
+            client = Customer.query.filter_by(username=identity).first()
+            if (client):
+                print(client)
+                confirm_order.status = 3
+                db.session.commit()
+                print(Order.query.get_or_404(id).status)
+
+    return ""
+
+
+@app.route('/checkOrderStatus/<int:id>')
+def checkOrderStatus(id):
+    status = Order.query.order_by(
+        Order.id.desc()).filter_by(customer_id=id).first()
+
+    return jsonify(OrderSchema().dump(status))
+
+
 @app.route('/api', methods=['GET', 'POST'])
 def api():
     categories = Categories.query.all()
@@ -628,7 +660,7 @@ def order_status():
     accept = request.args.get('accept')
     reject = request.args.get('reject')
     if accept:
-        print('accpetd', accept)
+        # print('accpetd', accept)
         selectedOrder = Order.query.get_or_404(accept)
         selectedOrder.status = 2
         db.session.commit()
@@ -637,7 +669,7 @@ def order_status():
         selectedOrder = Order.query.get_or_404(reject)
         selectedOrder.status = 4
         db.session.commit()
-        print('reject', reject)
+        # print('reject', reject)
         return redirect(url_for('orders', order=reject))
 
 
@@ -658,7 +690,6 @@ def orders():
         for detaill in detaills:
             supp_arr = []
             totalSupp = 0
-            print(detaill)
             if detaill['supplement'] != None:
                 for supp in detaill['supplement']:
                     supp_item = ItemSupplement.query.filter_by(
@@ -711,9 +742,12 @@ def orders():
     try:
         if selected_order != None:
             for el in final_data:
-                if el['order_id'] == int(selected_order):
-                    # dateconv=utc_to_local_datetime
-                    return render_template('client_order.html', order_data=el)
+                try:
+                    if el['order_id'] == int(selected_order):
+                        # dateconv=utc_to_local_datetime
+                        return render_template('client_order.html', order_data=el)
+                except ValueError:
+                    make_response(render_template("404.html"), 404)
 
     except TypeError:
         # dateconv=utc_to_local_datetime
@@ -1141,7 +1175,7 @@ def MyNotification():
             selected_notif.isReaded = True
 
         db.session.commit()
-        print(data)
+        # print(data)
         return jsonify(data)
 
     if request.method == "GET":
