@@ -1,5 +1,4 @@
 import ast
-from tkinter import EXCEPTION
 from werkzeug.utils import secure_filename
 from flask_marshmallow import Marshmallow
 from marshmallow_sqlalchemy.fields import Nested
@@ -742,9 +741,12 @@ def orders():
     try:
         if selected_order != None:
             for el in final_data:
-                if el['order_id'] == int(selected_order):
-                    # dateconv=utc_to_local_datetime
-                    return render_template('client_order.html', order_data=el)
+                try:
+                    if el['order_id'] == int(selected_order):
+                        # dateconv=utc_to_local_datetime
+                        return render_template('client_order.html', order_data=el)
+                except ValueError:
+                    make_response(render_template("404.html"), 404)
 
     except TypeError:
         # dateconv=utc_to_local_datetime
