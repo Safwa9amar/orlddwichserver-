@@ -98,7 +98,7 @@ window.addEventListener("DOMContentLoaded", () => {
         .querySelector(".dataTables_filter")
         .setAttribute("style", "color:#000 !important");
     } catch (error) {
-      console.error(error);
+      // console.error(error);
     }
   }
 

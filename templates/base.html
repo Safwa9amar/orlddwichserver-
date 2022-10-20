@@ -6,12 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href={{ url_for("static", filename='logo.png' ) }}
     type="image/x-icon">
-    <link
+    <!-- <link
       href="https://cdn.jsdelivr.net/npm/daisyui@2.31.0/dist/full.css"
       rel="stylesheet"
       type="text/css"
+    /> -->
+    <link
+      rel="stylesheet"
+      href="{{url_for('static', filename='css/daisy.css')}}"
     />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <script src="{{url_for('static', filename='js/tailcss.js')}}"></script>
     <script
       src="https://kit.fontawesome.com/7265835527.js"
       crossorigin="anonymous"
