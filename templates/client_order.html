@@ -153,10 +153,7 @@
   <ul class="steps m-4 p-5 bg-base-100 shadow-xl rounded-lg">
     <li class="step step-primary">
       <p>Commande créée</p>
-      <script>
-        const order_time = `{{order_data.date.strftime("%H:%M:%S")}}`;
-        const order_date = `{{order_data.date.date()}}`;
-      </script>
+
       <p date-attr="date">{{(order_data.date).date()}}</p>
       <p date-attr="time">{{(order_data.date).strftime("%H:%M:%S")}}</p>
     </li>
@@ -179,18 +176,6 @@
   </ul>
   {%endif%}
 </div>
-<script>
-  let tz_time = document.querySelectorAll("[date-attr='time']");
-  tz_time.forEach((el) => {
-    var currentTimeLocal = moment.tz(
-      `${order_date} ${order_time}`,
-      moment.tz.guess()
-    );
-    let time = currentTimeLocal.format("H:mm:ss");
-    el.innerHTML = time;
-    console.log(time);
-  });
-</script>
 
 {%endblock%}
 <!-- 
