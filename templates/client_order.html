@@ -182,7 +182,6 @@
 <script>
   let tz_time = document.querySelectorAll("[date-attr='time']");
   tz_time.forEach((el) => {
-    el.innerHTML = date.toLocaleDateString();
     var currentTimeLocal = moment.tz(
       `${order_date} ${order_time}`,
       moment.tz.guess()
