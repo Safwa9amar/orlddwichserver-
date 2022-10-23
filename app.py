@@ -152,6 +152,7 @@ class ItemSupplement(db.Model):
     Prix = db.Column(db.Float, nullable=False)
     isAvailable = db.Column(db.Boolean, unique=False, default=True)
     img_url = db.Column(db.String, nullable=False)
+    max = db.Column(db.Integer, nullable=False)
     # Supplement id
     supplementID = db.Column(db.Integer, ForeignKey("Supplement.id"))
     supplement = db.relationship('Supplement', backref='item_supplement')
@@ -693,6 +694,7 @@ def orders():
                 for supp in detaill['supplement']:
                     supp_item = ItemSupplement.query.filter_by(
                         id=supp['item_id']).first()
+                    print(supp_item)
 
                     supp_arr.append(
                         {'supp': supp_item, 'count': supp['count']})
@@ -831,6 +833,7 @@ def supplement():
         name = request.form['nom']
         Prix = request.form['price']
         categoryIDs = request.form['category']
+        maxSelect = request.form['max']
 
         uploaded_image = request.files['photo']
         if uploaded_image.filename != '':
@@ -857,6 +860,7 @@ def supplement():
             img_url=img_filename,
             supplementID=suppId,
             categoryIDs=categoryIDs,
+            max=maxSelect,
         )
         db.session.add(item)
         db.session.commit()
@@ -1182,6 +1186,7 @@ def MyNotification():
         notif_arr = []
         try:
             for el in notif:
+                print(NotificationSchema().dump(el))
                 obj = {
                     "id": el.id,
                     "isReaded": el.isReaded,
@@ -1205,8 +1210,8 @@ def MyNotification():
 #     print("recived")
 
 
-@app.errorhandler(404)
-@login_required
+@ app.errorhandler(404)
+@ login_required
 def not_found(e):
     """Page not found."""
     return make_response(render_template("404.html"), 404)

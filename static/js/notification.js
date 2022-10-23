@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
       mode: "cors",
       method: "GET",
     }).then((res) => res.json());
-
     return res;
   };
   try {
